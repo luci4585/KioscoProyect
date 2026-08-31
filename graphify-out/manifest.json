@@ -1,0 +1,20 @@
+{
+  "Base_tecnica.md": {
+    "mtime": 1788205303.5370214,
+    "seen": 1788206118.0394452,
+    "ast_hash": "90b506adb8688584df84eaa9162a88da",
+    "semantic_hash": "90b506adb8688584df84eaa9162a88da"
+  },
+  "RoadMap.md": {
+    "mtime": 1788205540.574961,
+    "seen": 1788206118.0394452,
+    "ast_hash": "3e70be798f25dfbe5a748fc7d2f3ba6d",
+    "semantic_hash": "3e70be798f25dfbe5a748fc7d2f3ba6d"
+  },
+  "SDD_Sistema_Gestion_Kiosco.md": {
+    "mtime": 1788200699.1761816,
+    "seen": 1788206118.0394452,
+    "ast_hash": "de899a5c963d8d93e8c2c7efc71e7c50",
+    "semantic_hash": "de899a5c963d8d93e8c2c7efc71e7c50"
+  }
+}
