@@ -1,0 +1,11 @@
+namespace Kiosco.Domain.Entities;
+
+public class Proveedor : BaseEntity
+{
+    public string RazonSocial { get; set; } = string.Empty;
+    public string? Cuit { get; set; }
+    public string? Telefono { get; set; }
+    public string? Email { get; set; }
+    public string? Direccion { get; set; }
+    public ICollection<IngresoMercaderia> IngresosMercaderia { get; set; } = new List<IngresoMercaderia>();
+}
