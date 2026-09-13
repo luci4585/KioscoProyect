@@ -28,6 +28,7 @@ yarn-error.log*
 # Backend
 Backend/**/bin/
 Backend/**/obj/
+Backend/**/logs/
 
 # User Secrets (stores secrets outside repo)
 **/secrets.json

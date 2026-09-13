@@ -1,108 +1,118 @@
 # AGENTS.md — Sistema de Gestión de Kiosco
 
-## Project Status
+## Estado del Proyecto
 
-Documentation-only repo. **No code yet.** The repo contains the complete system design before implementation begins. When code arrives, follow `RoadMap.md` Etapa 0-17 strictly.
+Proyecto en **implementación activa**. Actualmente en **Etapa 0 (Preparación)** del RoadMap. El backend tiene estructura hexagonal, entidades de dominio, configuraciones EF Core y un controller de prueba. El frontend tiene estructura Next.js con Firebase Auth básico.
 
-## What This Is
+## Qué es este sistema
 
-A kiosco (convenience store) management system with:
-- **Backend:** C# / .NET 8 / ASP.NET Core Web API
-- **Frontend:** Next.js / TypeScript / React / Tailwind CSS
-- **Database:** PostgreSQL
-- **Auth:** Firebase Authentication (frontend) + Firebase Admin SDK (backend validation)
-- **Storage:** Firebase Storage (product images)
-- **Architecture:** Hexagonal (Ports and Adapters)
+Sistema de gestión integral para kioscos (autoservicios):
+- **Backend:** C# / .NET 9 / ASP.NET Core Web API
+- **Frontend:** Next.js 16 / TypeScript / React 19 / Tailwind CSS 4
+- **Base de datos:** PostgreSQL (local, nativo en Windows)
+- **Auth:** Firebase Authentication (frontend) + Firebase Admin SDK (backend, pendiente)
+- **Storage:** Firebase Storage (imágenes de productos, pendiente)
+- **Arquitectura:** Hexagonal (Ports and Adapters)
 
-## Key Documents
+## Documentos clave
 
-| File | Purpose |
-|------|---------|
-| `SDD_Sistema_Gestion_Kiosco.md` | **Primary reference.** 79 functional requirements (RF-001 to RF-079), 72 non-functional requirements, full architecture spec, testing strategy. |
-| `RoadMap.md` | 18 implementation stages (Etapa 0-17). Follow this order. |
-| `Base_tecnica.md` | Stack technology summary. |
-| `graphify-out/` | Auto-generated knowledge graph of the codebase. Ignore unless querying architecture relationships. |
+| Archivo | Propósito |
+|---------|-----------|
+| `SDD_Sistema_Gestion_Kiosco.md` | **Referencia principal.** 79 requerimientos funcionales (RF-001 a RF-079), 72 requerimientos no funcionales, especificación completa de arquitectura, estrategia de testing. |
+| `RoadMap.md` | 18 etapas de implementación (Etapa 0-17). Seguir estrictamente este orden. |
+| `Base_tecnica.md` | Resumen del stack tecnológico. |
 
-## Architecture Rules (from SDD)
+## Reglas de arquitectura (del SDD)
 
-- Hexagonal architecture: Domain → Application → Infrastructure → API
-- Domain must NOT depend on: PostgreSQL, EF Core, Firebase, Serilog, ASP.NET Core
-- Dependencies point inward toward the nucleus
-- Controllers contain no business logic
-- Use DTOs for all API transport (never expose EF entities directly)
-- Use FluentValidation for input validation (separate from controllers)
-- IDs are `int` autoincremental (PostgreSQL Identity Columns), never Guid/UUID
-- All deletions are logical (soft delete), never physical
+- Arquitectura hexagonal: Domain → Application → Infrastructure → API
+- Domain NO debe depender de: PostgreSQL, EF Core, Firebase, Serilog, ASP.NET Core
+- Las dependencias apuntan hacia el núcleo
+- Los Controllers no contienen lógica de negocio
+- Usar DTOs para todo transporte de datos de la API (nunca exponer entidades EF directamente)
+- Usar FluentValidation para validación de entrada (separado de controllers)
+- IDs son `int` autoincremental (PostgreSQL Identity Columns), nunca Guid/UUID
+- Todas las eliminaciones son lógicas (soft delete), nunca físicas
 
-## Entity Structure
+## Estructura de entidades
 
 ```
-Usuario, Rol, Permiso, Rubro, Producto, Cliente, Proveedor,
+Usuario, Rol, Permiso, RolPermiso, Rubro, Producto, Cliente, Proveedor,
 Stock, Venta, DetalleVenta, Caja, MovimientoCaja,
 IngresoMercaderia, DetalleIngresoMercaderia
 ```
 
-## Planned Project Structure
+## Estructura del proyecto
 
 ```
 Backend/
-├── Kiosco.Domain/          # Entities, ValueObjects, Enums, Exceptions, Interfaces
-├── Kiosco.Application/     # DTOs, Interfaces, Services, UseCases, Validators, Mappings
-├── Kiosco.Infrastructure/  # Persistence (EF Core), Firebase, Logging (Serilog)
+├── Kiosco.Domain/          # Entidades, ValueObjects, Enums, Excepciones, Interfaces
+├── Kiosco.Application/     # DTOs, Interfaces, Servicios, UseCases, Validators, Mappings
+├── Kiosco.Infrastructure/  # Persistencia (EF Core), Firebase, Logging (Serilog)
 ├── Kiosco.API/             # Controllers, Middleware, Extensions, Program.cs
 └── Kiosco.Tests/           # UnitTests, ControllerTests, IntegrationTests
+
+frontend/
+├── src/
+│   ├── app/                # Next.js App Router
+│   ├── components/         # Componentes React reutilizables
+│   ├── lib/                # Firebase config, auth helpers
+│   ├── services/           # Cliente API REST
+│   ├── types/              # Interfaces TypeScript
+│   └── hooks/              # Custom hooks
 ```
 
-## Auth Flow
+## Flujo de autenticación
 
 ```
 Next.js → Firebase Auth SDK → Firebase ID Token
     → Authorization: Bearer <token>
-    → ASP.NET Core → Firebase Admin SDK validates token
-    → Firebase UID → Internal User (PostgreSQL) → Roles → Permissions
+    → ASP.NET Core → Firebase Admin SDK valida token
+    → Firebase UID → Usuario interno (PostgreSQL) → Roles → Permisos
 ```
 
-## Implementation Order
+## Orden de implementación
 
-Follow `RoadMap.md` stages 0-17 strictly. Each stage must pass tests before advancing. Key dependency chain:
+Seguir estrictamente las etapas 0-17 del `RoadMap.md`. Cada etapa debe pasar tests antes de avanzar. Cadena de dependencias clave:
 
 ```
-Preparation → DB Design → Backend Architecture → Auth → Rubros → Productos
+Preparación → DB Design → Arquitectura Backend → Auth → Rubros → Productos
 → Clientes/Proveedores → Stock → Ingreso Mercadería → Ventas → Caja
-→ Informes → Integration → Full Testing → Security → Docs → Delivery
+→ Informes → Integración → Testing Completo → Seguridad → Docs → Entrega
 ```
 
-## Testing Strategy
+## Estrategia de testing
 
-- **Unit tests:** Domain rules, use cases, services, validators, calculations
-- **Controller tests:** In-memory DB provider
-- **Integration tests:** Dedicated PostgreSQL test database
-- **Regression:** Full test suite after each significant change
-- Framework: xUnit or NUnit (TBD), FluentAssertions recommended
+- **Tests unitarios:** Reglas de dominio, use cases, servicios, validadores, cálculos
+- **Tests de controllers:** Proveedor de DB en memoria
+- **Tests de integración:** Base de datos PostgreSQL dedicada de testing
+- **Regresión:** Suite completa de tests después de cada cambio significativo
+- Framework: xUnit, FluentAssertions (recomendado)
 
-## Commands (once code exists)
+## Comandos
 
 ```bash
 # Backend
+dotnet restore
 dotnet build
 dotnet test
 dotnet run --project Backend/Kiosco.API
 
 # Frontend
+cd frontend
+npm install
 npm run dev
 npm run build
 npm run lint
-npm run test
 ```
 
-## Conventions
+## Convenciones
 
-- Spanish naming for domain entities (Producto, Venta, Caja, etc.)
-- English naming for technical code (services, controllers, etc.)
-- Use `appsettings.json` + environment variables for config (never hardcode secrets)
-- Serilog for logging, never log passwords/tokens/credentials
-- Swagger/OpenAPI for API documentation
-- ClosedXML or EPPlus for Excel exports (select one during implementation)
+- Naming en español para entidades de dominio (Producto, Venta, Caja, etc.)
+- Naming en inglés para código técnico (services, controllers, etc.)
+- Usar `appsettings.json` + User Secrets + variables de entorno para configuración (nunca hardcodear secretos)
+- Serilog para logging, nunca registrar passwords/tokens/credenciales
+- Swagger/OpenAPI para documentación de la API
+- ClosedXML o EPPlus para exportaciones Excel (seleccionar durante implementación)
 
 ## Firebase MCP
 
