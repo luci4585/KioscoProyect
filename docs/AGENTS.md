@@ -103,3 +103,11 @@ npm run test
 - Serilog for logging, never log passwords/tokens/credentials
 - Swagger/OpenAPI for API documentation
 - ClosedXML or EPPlus for Excel exports (select one during implementation)
+
+## Firebase MCP
+
+Cuando una tarea involucre Firebase, utiliza preferentemente el MCP oficial de Firebase para inspeccionar o gestionar recursos en lugar de asumir configuraciones.
+
+El MCP no modifica el alcance de las fases del roadmap: disponer de una herramienta Firebase no autoriza a implementar servicios Firebase antes de la fase correspondiente.
+
+Nunca inventes valores de configuración Firebase ni almacenes credenciales o secretos en el repositorio.
