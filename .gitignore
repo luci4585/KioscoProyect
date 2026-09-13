@@ -29,6 +29,9 @@ yarn-error.log*
 Backend/**/bin/
 Backend/**/obj/
 
+# User Secrets (stores secrets outside repo)
+**/secrets.json
+
 # Frontend
 frontend/.next/
 frontend/node_modules/
