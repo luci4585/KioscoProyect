@@ -1,3 +1,5 @@
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Kiosco.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -22,6 +24,21 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<KioscoDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+var firebaseJsonBase64 = builder.Configuration["Firebase:ServiceAccountJsonBase64"]
+    ?? throw new InvalidOperationException(
+        "Firebase:ServiceAccountJsonBase64 no está configurado.");
+
+var firebaseJson = System.Text.Encoding.UTF8.GetString(
+    Convert.FromBase64String(firebaseJsonBase64));
+
+if (FirebaseApp.DefaultInstance == null)
+{
+    FirebaseApp.Create(new AppOptions
+    {
+        Credential = GoogleCredential.FromJson(firebaseJson)
+    });
+}
 
 var app = builder.Build();
 
