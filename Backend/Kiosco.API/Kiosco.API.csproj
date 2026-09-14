@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kiosco.Application\Kiosco.Application.csproj" />
     <ProjectReference Include="..\Kiosco.Infrastructure\Kiosco.Infrastructure.csproj" />
   </ItemGroup>
 

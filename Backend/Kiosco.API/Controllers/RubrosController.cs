@@ -1,7 +1,6 @@
 using Kiosco.Application.DTOs;
-using Kiosco.Infrastructure.Persistence.Context;
+using Kiosco.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Kiosco.API.Controllers;
 
@@ -9,65 +8,48 @@ namespace Kiosco.API.Controllers;
 [Route("api/[controller]")]
 public class RubrosController : ControllerBase
 {
-    private readonly KioscoDbContext _context;
+    private readonly IRubroService _rubroService;
 
-    public RubrosController(KioscoDbContext context)
+    public RubrosController(IRubroService rubroService)
     {
-        _context = context;
+        _rubroService = rubroService;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<RubroDto>>> GetRubros()
     {
-        var rubros = await _context.Rubros
-            .Where(r => r.Activo)
-            .Select(r => new RubroDto
-            {
-                Id = r.Id,
-                Nombre = r.Nombre,
-                Descripcion = r.Descripcion,
-                Activo = r.Activo
-            })
-            .ToListAsync();
-
+        var rubros = await _rubroService.GetAllAsync();
         return Ok(rubros);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<RubroDto>> GetRubro(int id)
     {
-        var rubro = await _context.Rubros.FindAsync(id);
-
+        var rubro = await _rubroService.GetByIdAsync(id);
         if (rubro == null)
             return NotFound();
 
-        return Ok(new RubroDto
-        {
-            Id = rubro.Id,
-            Nombre = rubro.Nombre,
-            Descripcion = rubro.Descripcion,
-            Activo = rubro.Activo
-        });
+        return Ok(rubro);
     }
 
     [HttpPost]
     public async Task<ActionResult<RubroDto>> CreateRubro(RubroCreateDto dto)
     {
-        var rubro = new Kiosco.Domain.Entities.Rubro
-        {
-            Nombre = dto.Nombre,
-            Descripcion = dto.Descripcion
-        };
+        var rubro = await _rubroService.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetRubro), new { id = rubro.Id }, rubro);
+    }
 
-        _context.Rubros.Add(rubro);
-        await _context.SaveChangesAsync();
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateRubro(int id, RubroUpdateDto dto)
+    {
+        await _rubroService.UpdateAsync(id, dto);
+        return NoContent();
+    }
 
-        return CreatedAtAction(nameof(GetRubro), new { id = rubro.Id }, new RubroDto
-        {
-            Id = rubro.Id,
-            Nombre = rubro.Nombre,
-            Descripcion = rubro.Descripcion,
-            Activo = rubro.Activo
-        });
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteRubro(int id)
+    {
+        await _rubroService.DeleteAsync(id);
+        return NoContent();
     }
 }

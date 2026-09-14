@@ -1,7 +1,8 @@
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
-using Kiosco.Infrastructure.Persistence.Context;
-using Microsoft.EntityFrameworkCore;
+using Kiosco.API.Middleware;
+using Kiosco.Application;
+using Kiosco.Infrastructure;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,15 +16,22 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-builder.Services.AddDbContext<KioscoDbContext>(options =>
-    options.UseNpgsql(connectionString));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 var firebaseJsonBase64 = builder.Configuration["Firebase:ServiceAccountJsonBase64"]
     ?? throw new InvalidOperationException(
@@ -42,6 +50,8 @@ if (FirebaseApp.DefaultInstance == null)
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -49,6 +59,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
 
