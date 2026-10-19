@@ -1,11 +1,13 @@
 using Kiosco.Application.DTOs;
 using Kiosco.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kiosco.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class RubrosController : ControllerBase
 {
     private readonly IRubroService _rubroService;

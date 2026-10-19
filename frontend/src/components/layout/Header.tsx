@@ -1,24 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { onAuthStateChange, signOut } from "@/lib/auth";
-import { User } from "firebase/auth";
+import { AuthUser } from "@/lib/AuthProvider";
+import { useAuth } from "@/lib/AuthProvider";
 
-export function Header() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChange((user) => {
-      setUser(user);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
+export function Header({ user }: { user: AuthUser | null }) {
+  const { signOut } = useAuth();
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
@@ -29,13 +15,16 @@ export function Header() {
           </h2>
         </div>
         <div className="flex items-center gap-4">
-          {loading ? (
-            <span className="text-sm text-gray-500">Cargando...</span>
-          ) : user ? (
+          {user ? (
             <>
-              <span className="text-sm text-gray-600">{user.email}</span>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-800">
+                  {user.nombre} {user.apellido}
+                </p>
+                <p className="text-xs text-gray-500">{user.rolNombre}</p>
+              </div>
               <button
-                onClick={handleSignOut}
+                onClick={signOut}
                 className="text-sm text-red-600 hover:text-red-800"
               >
                 Cerrar sesión

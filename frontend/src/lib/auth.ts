@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
@@ -11,6 +13,13 @@ import { getClientAuth } from "./firebase";
 export async function signIn(email: string, password: string) {
   const auth = getClientAuth();
   return signInWithEmailAndPassword(auth, email, password);
+}
+
+export async function signUp(email: string, password: string) {
+  const auth = getClientAuth();
+  const credential = await createUserWithEmailAndPassword(auth, email, password);
+  await sendEmailVerification(credential.user);
+  return credential;
 }
 
 export async function signOut() {

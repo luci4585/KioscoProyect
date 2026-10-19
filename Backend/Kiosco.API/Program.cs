@@ -3,6 +3,7 @@ using Google.Apis.Auth.OAuth2;
 using Kiosco.API.Middleware;
 using Kiosco.Application;
 using Kiosco.Infrastructure;
+using Microsoft.AspNetCore.Authentication;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,10 @@ builder.Host.UseSerilog();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddAuthentication("Firebase")
+    .AddScheme<AuthenticationSchemeOptions, FirebaseAuthHandler>("Firebase", null);
+builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -60,6 +65,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
