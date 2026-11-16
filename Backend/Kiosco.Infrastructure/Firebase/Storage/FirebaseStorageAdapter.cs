@@ -40,9 +40,12 @@ public class FirebaseStorageAdapter : IStorageService
 
             var json = Encoding.UTF8.GetString(Convert.FromBase64String(jsonBase64));
 
-            // CredentialFactory en lugar del obsoleto GoogleCredential.FromJson (CS0618).
+            // CredentialFactory (sin el obsoleto GoogleCredential.FromJson, CS0618):
+            // se crea el credential concreto de cuenta de servicio y se envuelve
+            // en GoogleCredential vía ToGoogleCredential() antes de acotar el scope.
             var credential = CredentialFactory
-                .FromJson<GoogleCredential>(json)
+                .FromJson<ServiceAccountCredential>(json)
+                .ToGoogleCredential()
                 .CreateScoped(StorageScope);
 
             return StorageClient.Create(credential);
@@ -57,12 +60,12 @@ public class FirebaseStorageAdapter : IStorageService
     {
         var objectName = BuildObjectName(fileName, contentType);
 
+        // Sobrecarga con bucket y nombre explícitos (evita la ambigüedad de
+        // Data.Object sin Bucket).
         await _client.Value.UploadObjectAsync(
-            new Google.Apis.Storage.v1.Data.Object
-            {
-                Name = objectName,
-                ContentType = contentType
-            },
+            _bucketName,
+            objectName,
+            contentType,
             content,
             new UploadObjectOptions { PredefinedAcl = PredefinedObjectAcl.PublicRead },
             cancellationToken);

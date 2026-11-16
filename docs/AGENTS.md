@@ -4,23 +4,34 @@
 
 Proyecto en **implementación activa**. Última auditoría de estado: **15/11/2026**.
 
-**Cierres autorizados por el responsable (15/11/2026) — Etapas 0, 1, 2 y 4 cerradas:**
+**Cierres autorizados por el responsable (15/11/2026) — Etapas 0, 1, 2, 4 y 5 cerradas:**
 
-- **Evidencia global de cierre:** `dotnet build` 0 errores/0 advertencias, `dotnet test`
-  **51/51 en verde**, `npm run lint` y `npm run build` correctos.
+- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **82/82 en verde**,
+  `npm run lint` y `npm run build` correctos.
 - **Etapa 0 (Preparación) ✅ cerrada:** ejecutabilidad verificada — la API arranca y sirve
   Swagger (HTTP 200) y `GET /api/Rubros` responde 401 sin token (protección activa).
 - **Etapa 1 (Diseño de BD) ✅ cerrada:** migración `20260913230009_InitialCreate`
   **aplicada en `kiosco_db`** verificado contra `__EFMigrationsHistory` de la BD real.
 - **Etapa 2 (Arquitectura backend) ✅ cerrada:** incluye el ítem de validaciones: los
   validadores FluentValidation están registrados y **invocados en los controllers
-  existentes** (`RubrosController`, `UsuariosController` → 400 con detalle). Los validadores
-  de entidades sin controller (Producto, Cliente, Proveedor, Venta, Caja) se invocarán al
-  crear sus controllers en las Etapas 5–10, según corresponda.
-- **Etapa 4 (Rubros) ✅ cerrada:** API CRUD con validadores invocados y permiso
+  existentes** (`RubrosController`, `UsuariosController`, `ProductosController` → 400 con
+  detalle). Los validadores de entidades sin controller (Cliente, Proveedor, Venta, Caja)
+  se invocarán al crear sus controllers en las Etapas 6–10, según corresponda.
+- **Etapa 4 (Rubros) ✅ cerrada (15/11/2026):** API CRUD con validadores invocados y permiso
   `rubros.gestionar`, frontend de alta/modificación/baja lógica, 27 tests de la etapa.
+- **Etapa 5 (Productos): implementación completada, CIERRE PENDIENTE de smoke test E2E**
+  (login real + CRUD + imagen contra Firebase/PostgreSQL) — ver detalle más abajo.
 
-**Etapa actual: Etapa 5 — Productos** (RoadMap §8).
+**Etapa 5 (Productos) — detalle de implementación (cierre pendiente de verificación E2E):** API de productos con búsqueda y filtros (nombre, código,
+rubro, estado, stock — RF-016), validadores invocados, permisos granulares
+(`productos.consultar/crear/editar/eliminar`), frontend `/productos` completo (alta,
+consulta, filtros, modificación, baja lógica, imágenes), puerto `IStorageService` +
+adaptador `FirebaseStorageAdapter` (RNF-036, bucket real
+`kiosco-proyect.firebasestorage.app`), validación de tipo/tamaño de imagen, 31 tests de la
+etapa (82/82 en total).
+
+**Etapa actual: Etapa 5 — Productos** (RoadMap §8), a la espera del smoke test E2E
+autorizado para su cierre.
 
 > Los porcentajes de esta sección son **estimaciones de la auditoría del 15/11/2026**,
 > recalculadas tras los cierres de las Etapas 0–4. Metodología: se toman las tareas
