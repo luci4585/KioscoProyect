@@ -29,5 +29,14 @@ public class UsuarioUpdateDto
     public string Apellido { get; set; } = string.Empty;
     public string NombreUsuario { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Asignación de rol a un usuario (RF-006). Separado de la modificación de
+/// datos para exigir el permiso "roles.gestionar" de forma independiente de
+/// "usuarios.gestionar" (RF-007, RF-008).
+/// </summary>
+public class UsuarioRolUpdateDto
+{
     public int RolId { get; set; }
 }

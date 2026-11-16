@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
@@ -8,12 +7,16 @@ namespace Kiosco.API.Middleware;
 
 public class FirebaseAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
+    private readonly IFirebaseTokenValidator _tokenValidator;
+
     public FirebaseAuthHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
-        UrlEncoder encoder)
+        UrlEncoder encoder,
+        IFirebaseTokenValidator tokenValidator)
         : base(options, logger, encoder)
     {
+        _tokenValidator = tokenValidator;
     }
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -29,28 +32,19 @@ public class FirebaseAuthHandler : AuthenticationHandler<AuthenticationSchemeOpt
         if (string.IsNullOrEmpty(token))
             return AuthenticateResult.NoResult();
 
-        try
-        {
-            var decoded = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(token);
-
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.NameIdentifier, decoded.Uid),
-                new("firebase_uid", decoded.Uid),
-                new(ClaimTypes.Email, decoded.Claims.GetValueOrDefault("email")?.ToString() ?? string.Empty),
-                new(ClaimTypes.Name, decoded.Claims.GetValueOrDefault("name")?.ToString() ?? string.Empty)
-            };
-
-            var identity = new ClaimsIdentity(claims, Scheme.Name);
-            var principal = new ClaimsPrincipal(identity);
-            var ticket = new AuthenticationTicket(principal, Scheme.Name);
-
-            return AuthenticateResult.Success(ticket);
-        }
-        catch (FirebaseAuthException ex)
-        {
-            Logger.LogWarning(ex, "Token Firebase inválido");
+        var claims = await _tokenValidator.ValidateAsync(token);
+        if (claims == null)
             return AuthenticateResult.Fail("Token inválido o expirado");
-        }
+
+        var identity = new ClaimsIdentity(new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, claims.Uid),
+            new("firebase_uid", claims.Uid),
+            new(ClaimTypes.Email, claims.Email),
+            new(ClaimTypes.Name, claims.Name)
+        }, Scheme.Name);
+
+        var principal = new ClaimsPrincipal(identity);
+        return AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name));
     }
 }

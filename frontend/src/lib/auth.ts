@@ -3,6 +3,7 @@
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
@@ -25,6 +26,15 @@ export async function signUp(email: string, password: string) {
 export async function signOut() {
   const auth = getClientAuth();
   return firebaseSignOut(auth);
+}
+
+/**
+ * Recuperación de contraseña (RF-001, RNF-028):
+ * Firebase envía un email con el enlace para restablecer la contraseña.
+ */
+export async function resetPassword(email: string) {
+  const auth = getClientAuth();
+  await sendPasswordResetEmail(auth, email);
 }
 
 export function onAuthStateChange(callback: (user: User | null) => void) {

@@ -40,6 +40,12 @@ public class AuthController : ControllerBase
 
         if (usuario != null)
         {
+            // RF-005: un usuario con baja lógica conserva su registro pero
+            // no puede operar (RNF-026: el endpoint queda prohibido).
+            if (!usuario.Activo)
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new { message = "El usuario se encuentra deshabilitado." });
+
             return Ok(new AuthMeResponse
             {
                 Id = usuario.Id,

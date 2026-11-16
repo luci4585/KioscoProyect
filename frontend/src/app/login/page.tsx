@@ -2,11 +2,11 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { signIn, signUp } from "@/lib/auth";
+import { signIn, signUp, resetPassword } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "reset">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,6 +21,19 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      if (mode === "reset") {
+        await resetPassword(email);
+        setInfo(
+          "Te enviamos un email con el enlace para restablecer tu contraseña. Revisá tu bandeja de entrada."
+        );
+        setLoading(false);
+        setTimeout(() => {
+          setMode("login");
+          setInfo(null);
+        }, 3000);
+        return;
+      }
+
       if (mode === "register") {
         if (password.length < 6) {
           setError("La contraseña debe tener al menos 6 caracteres.");
@@ -52,7 +65,19 @@ export default function LoginPage() {
       const message =
         err instanceof Error ? err.message : "Error en la operación";
 
-      if (mode === "register") {
+      if (mode === "reset") {
+        if (message.includes("auth/invalid-email")) {
+          setError("El formato del email no es válido.");
+        } else if (message.includes("auth/user-not-found")) {
+          setError("No existe una cuenta con ese email.");
+        } else if (message.includes("auth/too-many-requests")) {
+          setError("Demasiados intentos. Espere unos minutos.");
+        } else if (message.includes("auth/network-request-failed")) {
+          setError("Error de conexión. Verifique su red.");
+        } else {
+          setError(message);
+        }
+      } else if (mode === "register") {
         if (message.includes("auth/email-already-in-use")) {
           setError("Ya existe una cuenta con ese email.");
         } else if (message.includes("auth/weak-password")) {
@@ -97,7 +122,9 @@ export default function LoginPage() {
         <p className="text-center text-gray-500 mb-6">
           {mode === "login"
             ? "Iniciá sesión para continuar"
-            : "Creá tu cuenta para comenzar"}
+            : mode === "reset"
+              ? "Ingresá tu email para restablecer tu contraseña"
+              : "Creá tu cuenta para comenzar"}
         </p>
 
         {error && (
@@ -131,23 +158,25 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Contraseña
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-              placeholder="••••••••"
-            />
-          </div>
+          {mode !== "reset" && (
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Contraseña
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                placeholder="••••••••"
+              />
+            </div>
+          )}
 
           {mode === "register" && (
             <div>
@@ -177,22 +206,53 @@ export default function LoginPage() {
             {loading
               ? mode === "login"
                 ? "Ingresando..."
-                : "Creando cuenta..."
+                : mode === "reset"
+                  ? "Enviando..."
+                  : "Creando cuenta..."
               : mode === "login"
                 ? "Ingresar"
-                : "Registrarme"}
+                : mode === "reset"
+                  ? "Enviar email de recuperación"
+                  : "Registrarme"}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
-          <button
-            onClick={toggleMode}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            {mode === "login"
-              ? "¿No tenés cuenta? Registrate"
-              : "¿Ya tenés cuenta? Iniciá sesión"}
-          </button>
+        <div className="mt-4 text-center space-y-2">
+          {mode === "login" && (
+            <div>
+              <button
+                onClick={() => {
+                  setMode("reset");
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </div>
+          )}
+
+          <div>
+            <button
+              onClick={
+                mode === "reset"
+                  ? () => {
+                      setMode("login");
+                      setError(null);
+                      setInfo(null);
+                    }
+                  : toggleMode
+              }
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              {mode === "reset"
+                ? "Volver a iniciar sesión"
+                : mode === "login"
+                  ? "¿No tenés cuenta? Registrate"
+                  : "¿Ya tenés cuenta? Iniciá sesión"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
