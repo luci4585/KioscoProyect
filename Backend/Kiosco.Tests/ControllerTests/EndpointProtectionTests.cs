@@ -102,6 +102,41 @@ public class EndpointProtectionTests
     }
 
     [Fact]
+    public void Productos_Endpoints_RequierenPermisosGranulares()
+    {
+        // RF-016 consulta → productos.consultar.
+        GetAction(nameof(ProductosController), nameof(ProductosController.GetProductos))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("productos.consultar");
+
+        GetAction(nameof(ProductosController), nameof(ProductosController.Search))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("productos.consultar");
+
+        // RF-013 alta, RF-017 modificación, RF-018 baja (RNF-034).
+        GetAction(nameof(ProductosController), nameof(ProductosController.CreateProducto))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("productos.crear");
+
+        GetAction(nameof(ProductosController), nameof(ProductosController.UpdateProducto))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("productos.editar");
+
+        GetAction(nameof(ProductosController), nameof(ProductosController.DeleteProducto))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("productos.eliminar");
+
+        // RF-020 imágenes: requiere permiso de edición del producto.
+        GetAction(nameof(ProductosController), nameof(ProductosController.UploadImagen))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("productos.editar");
+
+        GetAction(nameof(ProductosController), nameof(ProductosController.DeleteImagen))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("productos.editar");
+    }
+
+    [Fact]
     public void AuthMe_NoRequierePermiso_PeroSiAutenticacion()
     {
         // /api/auth/me es el punto de entrada tras el login (RF-001): exige

@@ -37,12 +37,23 @@ public class ProductoRepository : GenericRepository<Producto>, IProductoReposito
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Producto>> SearchAsync(string? nombre, string? codigo, int? rubroId)
+    public async Task<IEnumerable<Producto>> SearchAsync(
+        string? nombre,
+        string? codigo,
+        int? rubroId,
+        bool? activo,
+        bool? conStock)
     {
         var query = _context.Productos
             .Include(p => p.Rubro)
             .Include(p => p.Stock)
-            .Where(p => p.Activo);
+            .AsQueryable();
+
+        // Estado (RF-016): por defecto solo activos; permite listar dados de baja si se pide.
+        if (activo.HasValue)
+            query = query.Where(p => p.Activo == activo.Value);
+        else
+            query = query.Where(p => p.Activo);
 
         if (!string.IsNullOrWhiteSpace(nombre))
             query = query.Where(p => p.Nombre.Contains(nombre));
@@ -52,6 +63,12 @@ public class ProductoRepository : GenericRepository<Producto>, IProductoReposito
 
         if (rubroId.HasValue)
             query = query.Where(p => p.RubroId == rubroId.Value);
+
+        // Disponibilidad de stock (RF-016).
+        if (conStock == true)
+            query = query.Where(p => p.Stock != null && p.Stock.Cantidad > 0);
+        else if (conStock == false)
+            query = query.Where(p => p.Stock == null || p.Stock.Cantidad <= 0);
 
         return await query.ToListAsync();
     }
@@ -63,5 +80,14 @@ public class ProductoRepository : GenericRepository<Producto>, IProductoReposito
             .Include(p => p.Stock)
             .Where(p => p.Activo && p.Stock != null && p.Stock.Cantidad <= p.StockMinimo)
             .ToListAsync();
+    }
+
+    // Sin filtro de estado: el índice único de Codigo aplica a todos los registros.
+    public async Task<Producto?> GetByCodigoAsync(string codigo)
+    {
+        return await _context.Productos
+            .Include(p => p.Rubro)
+            .Include(p => p.Stock)
+            .FirstOrDefaultAsync(p => p.Codigo == codigo);
     }
 }

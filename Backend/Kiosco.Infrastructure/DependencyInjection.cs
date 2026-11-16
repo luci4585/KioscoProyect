@@ -1,4 +1,6 @@
+using Kiosco.Application.Interfaces;
 using Kiosco.Domain.Interfaces;
+using Kiosco.Infrastructure.Firebase.Storage;
 using Kiosco.Infrastructure.Persistence.Context;
 using Kiosco.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,10 @@ public static class DependencyInjection
 
         services.AddDbContext<KioscoDbContext>(options =>
             options.UseNpgsql(connectionString));
+
+        // Adaptador de imágenes (RF-020, RNF-035/RNF-036): puerto en Application,
+        // implementación real en Infrastructure (SDD §30.8).
+        services.AddScoped<IStorageService, FirebaseStorageAdapter>();
 
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IRubroRepository, RubroRepository>();

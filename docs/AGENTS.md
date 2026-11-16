@@ -4,50 +4,59 @@
 
 Proyecto en **implementación activa**. Última auditoría de estado: **15/11/2026**.
 
-**Etapa actual: Etapa 3 — Autenticación y autorización** (~41% de sus tareas implementadas;
-ver estimación más abajo).
+**Cierres autorizados por el responsable (15/11/2026) — Etapas 0, 1, 2 y 4 cerradas:**
 
-> Los porcentajes de esta sección son **estimaciones de la auditoría del 15/11/2026**.
-> Metodología: se toman las tareas documentadas en `RoadMap.md` (actividades + ítems de
-> testing de cada etapa) y se clasifican con los estados de la sección "Registro de avance";
-> ✅ cuentan 1, 🟡 cuentan 0,5, 🔵/🔴/⚪ cuentan 0. **No son valores permanentes**: solo
-> reflejan el estado en esa fecha y deben recalcarse en la próxima auditoría autorizada.
+- **Evidencia global de cierre:** `dotnet build` 0 errores/0 advertencias, `dotnet test`
+  **51/51 en verde**, `npm run lint` y `npm run build` correctos.
+- **Etapa 0 (Preparación) ✅ cerrada:** ejecutabilidad verificada — la API arranca y sirve
+  Swagger (HTTP 200) y `GET /api/Rubros` responde 401 sin token (protección activa).
+- **Etapa 1 (Diseño de BD) ✅ cerrada:** migración `20260913230009_InitialCreate`
+  **aplicada en `kiosco_db`** verificado contra `__EFMigrationsHistory` de la BD real.
+- **Etapa 2 (Arquitectura backend) ✅ cerrada:** incluye el ítem de validaciones: los
+  validadores FluentValidation están registrados y **invocados en los controllers
+  existentes** (`RubrosController`, `UsuariosController` → 400 con detalle). Los validadores
+  de entidades sin controller (Producto, Cliente, Proveedor, Venta, Caja) se invocarán al
+  crear sus controllers en las Etapas 5–10, según corresponda.
+- **Etapa 4 (Rubros) ✅ cerrada:** API CRUD con validadores invocados y permiso
+  `rubros.gestionar`, frontend de alta/modificación/baja lógica, 27 tests de la etapa.
+
+**Etapa actual: Etapa 5 — Productos** (RoadMap §8).
+
+> Los porcentajes de esta sección son **estimaciones de la auditoría del 15/11/2026**,
+> recalculadas tras los cierres de las Etapas 0–4. Metodología: se toman las tareas
+> documentadas en `RoadMap.md` (actividades + ítems de testing de cada etapa) y se
+> clasifican con los estados de la sección "Registro de avance"; ✅ cuentan 1,
+> 🟡 cuentan 0,5, 🔵/🔴/⚪ cuentan 0. **No son valores permanentes**: solo reflejan el
+> estado en esa fecha y deben recalcarse en la próxima auditoría autorizada.
 
 **Situación por etapa (al 15/11/2026):**
 
-- **Etapa 0 (Preparación):** *implementación completada, etapa NO validada ni cerrada.*
-  Hecho: repo Git/GitHub, solución de 5 proyectos, frontend Next.js, PostgreSQL, Firebase,
-  variables de entorno, proyecto de tests, Swagger, estructura hexagonal.
-  Validación pendiente: ejecutabilidad del proyecto base ("proyecto base ejecutable").
-- **Etapa 1 (Diseño de BD):** *implementación completada, etapa NO validada ni cerrada.*
-  Hecho: 15 entidades, 15 configuraciones EF Core, índices, Identity Columns, migración
-  `InitialCreate`.
-  Validación pendiente: migración aplicada en la BD real.
-- **Etapa 2 (Arquitectura backend):** *implementación completada con ítems parciales, etapa NO
-  validada ni cerrada.*
-  Hecho: proyectos, DI, DbContext, PostgreSQL, middleware de errores, DTOs, mappings, Serilog.
-  Pendiente: los validadores FluentValidation están registrados pero aún no se invocan desde
-  controllers/servicios.
-- **Etapa 3 (actual):** hecho — Firebase Auth SDK, login, logout, Firebase ID Token, Firebase
-  Admin SDK, usuario interno (`/api/auth/me`), sesión protegida en frontend.
-  Pendiente — recuperación de contraseña, aplicación real de roles y permisos en endpoints,
-  gestión de usuarios/roles, y los 6 tests de testing de la etapa.
-- **Etapa 4 (Rubros):** parcial — API CRUD completa y baja lógica; frontend solo lectura
-  (sin alta/edición/baja); sin tests.
-- **Etapas 5 a 10:** existe código de servicio adelantado (Producto, Cliente, Proveedor,
-  Stock, IngresoMercaderia, Venta, Caja) **sin API, sin frontend y sin tests**. Trabajo fuera
+- **Etapa 0 (Preparación): ✅ CERRADA (15/11/2026).**
+- **Etapa 1 (Diseño de BD): ✅ CERRADA (15/11/2026).**
+- **Etapa 2 (Arquitectura backend): ✅ CERRADA (15/11/2026).**
+- **Etapa 3 (Autenticación y autorización): ✅ CERRADA (15/11/2026).** 24 tests.
+- **Etapa 4 (Rubros): ✅ CERRADA (15/11/2026).** 27 tests; 51/51 en total.
+- **Etapa 5 (Productos) — ACTUAL:** RoadMap §8 — alta, consulta, búsqueda, filtros,
+  modificación, baja lógica, precios, costos, asociación con rubros, imágenes
+  (Firebase Storage: carga, asociación, reemplazo, eliminación) y tests.
+  Existe código de servicio adelantado (ProductoService, DTOs, validador) sin API,
+  frontend, storage ni tests.
+- **Etapas 6 a 10:** existe código de servicio adelantado (Cliente, Proveedor, Stock,
+  IngresoMercaderia, Venta, Caja) **sin API, sin frontend y sin tests**. Trabajo fuera
   de orden: no se considera cerrado ni autoriza a avanzar.
 - **Etapas 11 a 17:** no iniciadas.
-- **Tests en el proyecto: 0 (cero).** `Kiosco.Tests/` solo contiene el `.csproj`.
+- **Tests en el proyecto: 51, todos en verde.**
 
 **Diagnóstico de siguiente tarea (no es autorización para ejecutarla):** según el orden de
-`RoadMap.md`, lo que corresponde a continuación es completar la Etapa 3, empezando por su
-batería de tests. Antes de iniciar cualquier tarea deben consultarse los requisitos y
-criterios exactos aplicables en `RoadMap.md` y en el SDD. La ejecución requiere
-autorización expresa del responsable del proyecto.
+`RoadMap.md`, corresponde completar la **Etapa 5 (Productos)**: API de productos con
+búsqueda/filtros, frontend, integración de Firebase Storage para imágenes y tests. Antes de
+iniciar cualquier tarea deben consultarse los requisitos y criterios exactos aplicables en
+`RoadMap.md` y en el SDD. La ejecución requiere autorización expresa del responsable del
+proyecto.
 
-Avance global estimado al 15/11/2026: **~28% estricto / ~41% ponderado** (misma metodología
-descrita arriba, aplicada a las 18 etapas). Estimación de auditoría, no valor permanente.
+Avance global estimado al 15/11/2026 (recalculado tras los cierres de Etapas 0–4):
+**~37% estricto / ~47% ponderado** (misma metodología descrita arriba, aplicada a las
+18 etapas). Estimación de auditoría, no valor permanente.
 
 ## Qué es este sistema
 

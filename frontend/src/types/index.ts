@@ -11,10 +11,13 @@ export interface Producto {
   id: number;
   nombre: string;
   descripcion?: string;
-  precio: number;
-  costo: number;
+  codigo: string;
   rubroId: number;
-  rubro?: Rubro;
+  rubroNombre: string;
+  precioVenta: number;
+  costo: number;
+  stockActual: number;
+  stockMinimo: number;
   imagenUrl?: string;
   activo: boolean;
   fechaCreacion: string;

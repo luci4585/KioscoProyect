@@ -20,11 +20,35 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Error desconocido" }));
-    throw new Error(error.message || `HTTP error ${response.status}`);
+    throw new Error(await extractErrorMessage(response));
   }
 
   return response.json();
+}
+
+/**
+ * Extrae un mensaje legible de una respuesta de error del backend:
+ * - ValidationProblemDetails (RFC 7807): { errors: { Campo: [msg] } }
+ * - Middleware de excepciones: { error: "..." }
+ * - Fallback: mensaje genérico con el código HTTP.
+ */
+async function extractErrorMessage(response: Response): Promise<string> {
+  const fallback = `HTTP error ${response.status}`;
+  const data = await response.json().catch(() => null);
+
+  if (!data || typeof data !== "object") return fallback;
+
+  if (typeof data.message === "string" && data.message) return data.message;
+  if (typeof data.error === "string" && data.error) return data.error;
+
+  if (data.errors && typeof data.errors === "object") {
+    const messages = Object.values(data.errors)
+      .flat()
+      .filter((m): m is string => typeof m === "string" && m.length > 0);
+    if (messages.length > 0) return messages.join(" ");
+  }
+
+  return fallback;
 }
 
 export const api = {
@@ -38,4 +62,32 @@ export const api = {
 
   delete: <T>(endpoint: string) =>
     request<T>(endpoint, { method: "DELETE" }),
+
+  /**
+   * Upload multipart (RF-020 — imágenes de productos).
+   * No se fija Content-Type: el navegador agrega el boundary del FormData.
+   */
+  upload: <T>(endpoint: string, formData: FormData): Promise<T> =>
+    uploadRequest<T>(endpoint, formData),
 };
+
+async function uploadRequest<T>(endpoint: string, formData: FormData): Promise<T> {
+  const token = await getIdToken();
+
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    method: "POST",
+    body: formData,
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(await extractErrorMessage(response));
+  }
+
+  return response.json();
+}
