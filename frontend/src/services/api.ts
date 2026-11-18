@@ -1,6 +1,6 @@
 import { getIdToken } from "@/lib/auth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5009";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5009";
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = await getIdToken();

@@ -120,6 +120,55 @@ export interface Caja {
   movimientos: MovimientoCaja[];
 }
 
+export interface VentaPorMetodo {
+  metodoPago: string;
+  cantidad: number;
+  total: number;
+}
+
+export interface ResumenDiario {
+  fecha: string;
+  montoInicialCaja: number;
+  totalIngresos: number;
+  totalEgresos: number;
+  montoFinalCaja: number;
+  totalVentas: number;
+  costoVendido: number;
+  ganancia: number;
+  cantidadVentas: number;
+  productosVendidos: number;
+  cajaAbierta: boolean;
+  usuarioApertura?: string | null;
+  usuarioCierre?: string | null;
+  ventasPorMetodoPago: VentaPorMetodo[];
+}
+
+export interface InformeVentas {
+  desde: string;
+  hasta: string;
+  cantidad: number;
+  totalVendido: number;
+  costoVendido: number;
+  ganancia: number;
+  ventas: Venta[];
+}
+
+export interface InformeGanancia {
+  desde: string;
+  hasta: string;
+  totalVendido: number;
+  costoVendido: number;
+  ganancia: number;
+}
+
+export interface ProductoVendido {
+  productoId: number;
+  productoNombre: string;
+  productoCodigo: string;
+  unidadesVendidas: number;
+  totalVendido: number;
+}
+
 export interface Usuario {
   id: number;
   firebaseUid: string;

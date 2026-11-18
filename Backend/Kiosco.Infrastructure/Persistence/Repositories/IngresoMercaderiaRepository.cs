@@ -41,6 +41,8 @@ public class IngresoMercaderiaRepository : GenericRepository<IngresoMercaderia>,
     {
         return await _context.IngresosMercaderia
             .Include(im => im.Proveedor)
+            .Include(im => im.Detalles)
+                .ThenInclude(d => d.Producto)
             .Where(im => im.Fecha >= desde && im.Fecha <= hasta)
             .OrderByDescending(im => im.Fecha)
             .ToListAsync();

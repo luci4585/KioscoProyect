@@ -1,5 +1,6 @@
 using Kiosco.Application.Interfaces;
 using Kiosco.Domain.Interfaces;
+using Kiosco.Infrastructure.Excel;
 using Kiosco.Infrastructure.Persistence.Context;
 using Kiosco.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IExcelExportService, ExcelExportAdapter>();
         services.AddScoped<IRubroRepository, RubroRepository>();
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IClienteRepository, ClienteRepository>();

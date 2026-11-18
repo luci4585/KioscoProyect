@@ -2097,7 +2097,7 @@ Validar:
 
 ---
 
-## 33.11 Etapa 10 — Caja
+## 33.11 Etapa 10 — Caja ✅ CERRADA (18/11/2026)
 
 ### Objetivo
 

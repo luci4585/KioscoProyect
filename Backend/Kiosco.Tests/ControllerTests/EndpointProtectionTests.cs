@@ -285,6 +285,36 @@ public class EndpointProtectionTests
     }
 
     [Fact]
+    public void Informes_Endpoints_RequierenPermisosDeInformes()
+    {
+        // Consultas → informes.consultar (RF-059 a RF-071, RNF-034).
+        GetAction(nameof(InformesController), nameof(InformesController.GetResumen))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("informes.consultar");
+
+        GetAction(nameof(InformesController), nameof(InformesController.GetVentas))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("informes.consultar");
+
+        GetAction(nameof(InformesController), nameof(InformesController.GetGanancia))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("informes.consultar");
+
+        GetAction(nameof(InformesController), nameof(InformesController.GetMasVendidos))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("informes.consultar");
+
+        GetAction(nameof(InformesController), nameof(InformesController.GetCaja))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("informes.consultar");
+
+        // Exportación → informes.exportar (RF-072).
+        GetAction(nameof(InformesController), nameof(InformesController.Exportar))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("informes.exportar");
+    }
+
+    [Fact]
     public void AuthMe_NoRequierePermiso_PeroSiAutenticacion()
     {
         // /api/auth/me es el punto de entrada tras el login (RF-001): exige

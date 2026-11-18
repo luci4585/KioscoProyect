@@ -40,6 +40,18 @@ public class VentaRepository : GenericRepository<Venta>, IVentaRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Venta>> GetByRangoFechasConDetallesAsync(DateTime desde, DateTime hasta)
+    {
+        return await _context.Ventas
+            .Include(v => v.Usuario)
+            .Include(v => v.Cliente)
+            .Include(v => v.DetallesVenta)
+                .ThenInclude(dv => dv.Producto)
+            .Where(v => v.Fecha >= desde && v.Fecha <= hasta)
+            .OrderByDescending(v => v.Fecha)
+            .ToListAsync();
+    }
+
     public async Task<Venta?> GetWithDetailsAsync(int id)
     {
         return await _context.Ventas

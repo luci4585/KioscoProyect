@@ -47,4 +47,16 @@ public class CajaRepository : GenericRepository<Caja>, ICajaRepository
             .OrderByDescending(c => c.FechaApertura)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Caja>> GetByRangoFechasAsync(DateTime desde, DateTime hasta)
+    {
+        return await _context.Cajas
+            .Include(c => c.UsuarioApertura)
+            .Include(c => c.UsuarioCierre)
+            .Include(c => c.Movimientos)
+                .ThenInclude(m => m.Usuario)
+            .Where(c => c.FechaApertura.Date >= desde.Date && c.FechaApertura.Date <= hasta.Date)
+            .OrderByDescending(c => c.FechaApertura)
+            .ToListAsync();
+    }
 }
