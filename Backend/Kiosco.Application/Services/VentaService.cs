@@ -12,15 +12,18 @@ public class VentaService : IVentaService
     private readonly IVentaRepository _ventaRepository;
     private readonly IProductoRepository _productoRepository;
     private readonly IStockRepository _stockRepository;
+    private readonly IClienteRepository _clienteRepository;
 
     public VentaService(
         IVentaRepository ventaRepository,
         IProductoRepository productoRepository,
-        IStockRepository stockRepository)
+        IStockRepository stockRepository,
+        IClienteRepository clienteRepository)
     {
         _ventaRepository = ventaRepository;
         _productoRepository = productoRepository;
         _stockRepository = stockRepository;
+        _clienteRepository = clienteRepository;
     }
 
     public async Task<IEnumerable<VentaDto>> GetAllAsync()
@@ -37,6 +40,12 @@ public class VentaService : IVentaService
 
     public async Task<VentaDto> CreateAsync(VentaCreateDto dto, int usuarioId)
     {
+        // RF-045: la asociación de cliente es opcional, pero si se indica debe
+        // corresponder a un cliente registrado.
+        if (dto.ClienteId.HasValue &&
+            !await _clienteRepository.ExistsAsync(dto.ClienteId.Value))
+            throw new EntityNotFoundException(nameof(Cliente), dto.ClienteId.Value);
+
         decimal total = 0;
         var detalles = new List<DetalleVenta>();
 
@@ -83,7 +92,10 @@ public class VentaService : IVentaService
             }
         }
 
-        return created.ToDto();
+        // Devuelve la venta con usuario, cliente y productos resueltos: la
+        // respuesta del alta debe tener las mismas descripciones que el detalle.
+        var completo = await _ventaRepository.GetWithDetailsAsync(created.Id) ?? created;
+        return completo.ToDto();
     }
 
     public async Task AnularAsync(int id)

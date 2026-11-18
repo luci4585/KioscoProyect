@@ -4,9 +4,9 @@
 
 Proyecto en **implementación activa**. Última auditoría de estado: **18/11/2026**.
 
-**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5 y 6 el 18/11/2026) — Etapas 0, 1, 2, 4, 5 y 6 cerradas:**
+**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5, 6, 7 y 8 el 18/11/2026) — Etapas 0, 1, 2, 4, 5, 6, 7 y 8 cerradas:**
 
-- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **139/139 en verde**,
+- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **187/187 en verde**,
   `npm run lint` y `npm run build` correctos.
 - **Etapa 0 (Preparación) ✅ cerrada:** ejecutabilidad verificada — la API arranca y sirve
   Swagger (HTTP 200) y `GET /api/Rubros` responde 401 sin token (protección activa).
@@ -15,8 +15,9 @@ Proyecto en **implementación activa**. Última auditoría de estado: **18/11/20
 - **Etapa 2 (Arquitectura backend) ✅ cerrada:** incluye el ítem de validaciones: los
   validadores FluentValidation están registrados y **invocados en los controllers
   existentes** (`RubrosController`, `UsuariosController`, `ProductosController` → 400 con
-  detalle). Los validadores de entidades sin controller (Cliente, Proveedor, Venta, Caja)
-  se invocarán al crear sus controllers en las Etapas 6–10, según corresponda.
+  detalle). Los validadores de entidades sin controller (Cliente y Proveedor ya invocados
+  en la Etapa 6; Venta y Caja) se invocarán al crear sus controllers en las Etapas 9–10,
+  según corresponda.
 - **Etapa 4 (Rubros) ✅ cerrada (15/11/2026):** API CRUD con validadores invocados y permiso
   `rubros.gestionar`, frontend de alta/modificación/baja lógica, 27 tests de la etapa.
 - **Etapa 5 (Productos) ✅ cerrada (18/11/2026):** catálogo completo — alta, consulta,
@@ -35,6 +36,26 @@ Proyecto en **implementación activa**. Última auditoría de estado: **18/11/20
   (403 sin permiso, CRUD + búsquedas + 400 de validación + CUIT duplicado + bajas
   lógicas, contra Firebase/PostgreSQL). **Cierre autorizado por el responsable
   el 18/11/2026.**
+- **Etapa 7 (Stock) ✅ cerrada (18/11/2026):** control de existencias (RoadMap §10) —
+  consulta general y por producto (RF-021), ingreso (RF-022), egreso (RF-023) con bloqueo
+  de stock insuficiente (RF-077), alertas de stock mínimo (RF-026), validador de
+  movimientos invocado, permiso `stock.gestionar` (sembrado, cero migraciones), frontend
+  `/stock` con vista de alertas y formularios de ingreso/egreso, **25 tests nuevos
+  (164/164 en verde)** y smoke test E2E real **17/17 pasos** (0+10=10, 10−4=6, egreso
+  insuficiente → 400 con stock intacto, alertas 6>5 sin alerta → 3≤5 con alerta,
+  403 sin permiso, contra Firebase/PostgreSQL). RF-024/RF-025 (actualización automática
+  por ventas) ya operativa en `VentaService`, verificable en la Etapa 9. **Cierre
+  autorizado por el responsable el 18/11/2026.**
+- **Etapa 8 (Ingreso de mercadería) ✅ cerrada (18/11/2026):** registro de ingresos de
+  proveedores (RF-036) con asociación de proveedor (RF-037), detalles con cantidades y
+  costos de adquisición (RF-039) e **incremento automático de stock (RF-038 — test
+  central: 0+12=12, acumulativo 12+3=15)**, rollback con stock intacto ante proveedor
+  inexistente (404), validador nuevo invocado, permiso existente `stock.gestionar`
+  (cero migraciones), frontend `/ingresos` con detalle de ingresos y link en el Sidebar,
+  **23 tests nuevos (187/187 en verde)** y smoke test E2E real **17/17 pasos** (403 sin
+  permiso, validaciones 400, contra Firebase/PostgreSQL). El alta devuelve el ingreso con
+  proveedor y productos resueltos (fix aplicado por el propio E2E). **Cierre autorizado
+  por el responsable el 18/11/2026.**
 
 **Etapa 5 (Productos) — detalle del cierre (cerrada el 18/11/2026):**
 API de productos con búsqueda y filtros (nombre, código, rubro, estado, stock — RF-016),
@@ -42,8 +63,8 @@ validadores invocados, permisos granulares (`productos.consultar/crear/editar/el
 frontend `/productos` completo (alta, consulta, filtros, modificación, baja lógica),
 21 tests de la etapa (72/72 en total).
 
-**Etapa actual: Etapa 6 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
-**Etapa 7 — Stock** (§10), **autorizada e en curso por el responsable el 18/11/2026**.
+**Etapa actual: Etapa 8 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
+**Etapa 9 — Ventas** (§12), **autorizada e en curso por el responsable el 18/11/2026**.
 
 **Decisión del responsable (18/11/2026) — especificación de roles:** el **superusuario**
 es el rol **Administrador** (acceso completo a todas las funciones del sistema: control de
@@ -87,21 +108,25 @@ revisión aislado) — es ajena a la eliminación de imágenes.
 - **Etapa 6 (Clientes y proveedores): ✅ CERRADA (18/11/2026).** RoadMap §9 — CRUD de
   clientes, CRUD de proveedores, búsquedas, baja lógica y tests. E2E real 22/22;
   139/139 tests en verde.
-- **Etapa 7 (Stock) — EN CURSO (18/11/2026, autorizada):** RoadMap §10 — consulta,
-  ingreso, egreso, stock mínimo, alertas y actualización automática.
-- **Etapas 8 a 10:** existe código de servicio adelantado (IngresoMercaderia, Venta,
-  Caja) **sin API, sin frontend y sin tests**. Trabajo fuera de orden: no se considera
-  cerrado ni autoriza a avanzar.
+- **Etapa 7 (Stock): ✅ CERRADA (18/11/2026).** RoadMap §10 — consulta, ingreso, egreso,
+  stock mínimo, alertas y actualización automática. E2E real 17/17; 164/164 tests en verde.
+- **Etapa 8 (Ingreso de mercadería): ✅ CERRADA (18/11/2026).** RoadMap §11 — creación
+  de ingresos, asociación con proveedor, cantidades, costos y actualización de stock.
+  E2E real 17/17; 187/187 tests en verde.
+- **Etapa 9 (Ventas) — EN CURSO (18/11/2026, autorizada):** RoadMap §12.
+- **Etapa 10 (Caja):** existe código de servicio adelantado (Caja) **sin API, sin frontend
+  y sin tests**. Trabajo fuera de orden: no se considera cerrado ni autoriza a avanzar.
 - **Etapas 11 a 17:** no iniciadas.
-- **Tests en el proyecto: 139, todos en verde (18/11/2026, tras el cierre de la Etapa 6).**
+- **Tests en el proyecto: 187, todos en verde (18/11/2026, tras el cierre de la Etapa 8).**
 
-**Diagnóstico de siguiente tarea:** la **Etapa 6 (Clientes y proveedores)** está
-**cerrada (18/11/2026)**. Según el orden de `RoadMap.md`, corresponde la **Etapa 7 —
-Stock** (§10): consulta, ingreso, egreso, stock mínimo, alertas, actualización
-automática y sus tests (incrementos, disminuciones, stock insuficiente, stock mínimo) —
-**autorizada por el responsable el 18/11/2026**. Antes de iniciar cualquier tarea deben
-consultarse los requisitos y criterios exactos aplicables en `RoadMap.md` y en el SDD.
-El cierre de la etapa requerirá autorización expresa del responsable del proyecto.
+**Diagnóstico de siguiente tarea:** las **Etapas 6, 7 y 8** están **cerradas
+(18/11/2026)**. Según el orden de `RoadMap.md`, corresponde la **Etapa 9 — Ventas**
+(§12): crear venta, agregar productos, cantidades, subtotales, total, método de pago,
+cliente, usuario vendedor, descuento automático de stock, consulta, detalle, anulación y
+tests (cálculos, stock insuficiente, persistencia, stock) — **autorizada por el
+responsable el 18/11/2026**. Antes de iniciar cualquier tarea deben consultarse los
+requisitos y criterios exactos aplicables en `RoadMap.md` y en el SDD. El cierre de la
+etapa requerirá autorización expresa del responsable del proyecto.
 
 Avance global estimado al 15/11/2026 (recalculado tras los cierres de Etapas 0–4):
 **~37% estricto / ~47% ponderado** (misma metodología descrita arriba, aplicada a las

@@ -85,6 +85,9 @@ public class IngresoMercaderiaService : IIngresoMercaderiaService
             }
         }
 
-        return created.ToDto();
+        // Devuelve el ingreso con proveedor y productos resueltos: la respuesta
+        // del alta debe tener las mismas descripciones que la consulta por id.
+        var completo = await _repository.GetWithDetailsAsync(created.Id) ?? created;
+        return completo.ToDto();
     }
 }

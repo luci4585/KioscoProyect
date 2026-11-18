@@ -214,6 +214,47 @@ public class EndpointProtectionTests
     }
 
     [Fact]
+    public void IngresosMercaderia_Endpoints_SiguenElPatronDePermisos()
+    {
+        // Consultas → solo autenticación.
+        GetAction(nameof(IngresosMercaderiaController), nameof(IngresosMercaderiaController.GetIngresos))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull("la consulta de ingresos es accesible a todo usuario interno autenticado");
+
+        GetAction(nameof(IngresosMercaderiaController), nameof(IngresosMercaderiaController.GetIngreso))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        // Escritura → stock.gestionar (RF-038: el ingreso es un movimiento de stock).
+        GetAction(nameof(IngresosMercaderiaController), nameof(IngresosMercaderiaController.CreateIngreso))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("stock.gestionar");
+    }
+
+    [Fact]
+    public void Ventas_Endpoints_RequierenPermisosDeVentas()
+    {
+        // Consulta → ventas.consultar (RF-048, RF-049, RNF-034).
+        GetAction(nameof(VentasController), nameof(VentasController.GetVentas))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("ventas.consultar");
+
+        GetAction(nameof(VentasController), nameof(VentasController.GetVenta))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("ventas.consultar");
+
+        // Registro → ventas.crear (RF-040).
+        GetAction(nameof(VentasController), nameof(VentasController.CreateVenta))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("ventas.crear");
+
+        // Anulación → ventas.anular (RF-050).
+        GetAction(nameof(VentasController), nameof(VentasController.AnularVenta))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("ventas.anular");
+    }
+
+    [Fact]
     public void AuthMe_NoRequierePermiso_PeroSiAutenticacion()
     {
         // /api/auth/me es el punto de entrada tras el login (RF-001): exige

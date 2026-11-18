@@ -56,6 +56,45 @@ export interface Stock {
   stockBajo: boolean;
 }
 
+export interface DetalleIngresoMercaderia {
+  id?: number;
+  productoId: number;
+  productoNombre?: string;
+  cantidad: number;
+  costoUnitario: number;
+}
+
+export interface IngresoMercaderia {
+  id: number;
+  fecha: string;
+  proveedorId: number;
+  proveedorNombre: string;
+  observaciones?: string;
+  detalles: DetalleIngresoMercaderia[];
+}
+
+export interface DetalleVenta {
+  id?: number;
+  productoId: number;
+  productoNombre?: string;
+  cantidad: number;
+  precioUnitario: number;
+  subtotal: number;
+}
+
+export interface Venta {
+  id: number;
+  fecha: string;
+  usuarioId: number;
+  usuarioNombre: string;
+  clienteId?: number | null;
+  clienteNombre?: string | null;
+  total: number;
+  metodoPago: string;
+  anulada: boolean;
+  detalles: DetalleVenta[];
+}
+
 export interface Usuario {
   id: number;
   firebaseUid: string;
