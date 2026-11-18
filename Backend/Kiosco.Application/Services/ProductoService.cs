@@ -9,29 +9,18 @@ namespace Kiosco.Application.Services;
 
 public class ProductoService : IProductoService
 {
-    /// <summary>Tamaño máximo de imagen: 5 MB (RNF-021 validación de entrada).</summary>
-    private const long MaxImageBytes = 5 * 1024 * 1024;
-
-    private static readonly string[] AllowedImageTypes =
-    {
-        "image/jpeg", "image/png", "image/webp", "image/gif"
-    };
-
     private readonly IProductoRepository _productoRepository;
     private readonly IRubroRepository _rubroRepository;
     private readonly IStockRepository _stockRepository;
-    private readonly IStorageService _storageService;
 
     public ProductoService(
         IProductoRepository productoRepository,
         IRubroRepository rubroRepository,
-        IStockRepository stockRepository,
-        IStorageService storageService)
+        IStockRepository stockRepository)
     {
         _productoRepository = productoRepository;
         _rubroRepository = rubroRepository;
         _stockRepository = stockRepository;
-        _storageService = storageService;
     }
 
     public async Task<IEnumerable<ProductoDto>> GetAllAsync()
@@ -119,61 +108,5 @@ public class ProductoService : IProductoService
             throw new EntityNotFoundException(nameof(Producto), id);
 
         await _productoRepository.DeleteAsync(id);
-    }
-
-    public async Task<ProductoDto> UploadImageAsync(
-        int id,
-        Stream content,
-        string fileName,
-        string contentType)
-    {
-        var producto = await _productoRepository.GetByIdAsync(id)
-            ?? throw new EntityNotFoundException(nameof(Producto), id);
-
-        ValidateImage(content, contentType);
-
-        // Carga primero; solo si la carga tiene éxito se reemplaza la referencia
-        // (RF-020: carga → asociación → reemplazo).
-        var url = await _storageService.UploadImageAsync(content, fileName, contentType);
-
-        var imagenAnterior = producto.ImagenUrl;
-        producto.ImagenUrl = url;
-        await _productoRepository.UpdateAsync(producto);
-
-        // Reemplazo: elimina la anterior después de asociar la nueva.
-        if (!string.IsNullOrEmpty(imagenAnterior) && imagenAnterior != url)
-            await _storageService.DeleteImageAsync(imagenAnterior);
-
-        return producto.ToDto();
-    }
-
-    public async Task<ProductoDto> RemoveImageAsync(int id)
-    {
-        var producto = await _productoRepository.GetByIdAsync(id)
-            ?? throw new EntityNotFoundException(nameof(Producto), id);
-
-        var imagen = producto.ImagenUrl;
-        if (string.IsNullOrEmpty(imagen))
-            throw new BusinessRuleException("El producto no tiene imagen asociada.");
-
-        producto.ImagenUrl = null;
-        await _productoRepository.UpdateAsync(producto);
-
-        // Eliminación del storage después de desasociar: el estado de la BD
-        // es la fuente de verdad; si falla el storage la URL queda huérfana
-        // pero inaccesible desde el sistema.
-        await _storageService.DeleteImageAsync(imagen);
-
-        return producto.ToDto();
-    }
-
-    private static void ValidateImage(Stream content, string contentType)
-    {
-        if (string.IsNullOrWhiteSpace(contentType) || !AllowedImageTypes.Contains(contentType))
-            throw new BusinessRuleException(
-                "Formato de imagen no soportado. Se permiten JPEG, PNG, WebP o GIF.");
-
-        if (content.CanSeek && content.Length > MaxImageBytes)
-            throw new BusinessRuleException("La imagen no puede superar los 5 MB.");
     }
 }

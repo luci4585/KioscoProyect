@@ -16,4 +16,17 @@ public class ProveedorRepository : GenericRepository<Proveedor>, IProveedorRepos
         return await _context.Proveedores
             .FirstOrDefaultAsync(p => p.Cuit == cuit && p.Activo);
     }
+
+    public async Task<IEnumerable<Proveedor>> SearchAsync(string? razonSocial, string? cuit)
+    {
+        var query = _context.Proveedores.Where(p => p.Activo);
+
+        if (!string.IsNullOrWhiteSpace(razonSocial))
+            query = query.Where(p => p.RazonSocial.Contains(razonSocial));
+
+        if (!string.IsNullOrWhiteSpace(cuit))
+            query = query.Where(p => p.Cuit != null && p.Cuit.Contains(cuit));
+
+        return await query.ToListAsync();
+    }
 }

@@ -10,14 +10,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Kiosco.Tests.UnitTests;
 
 /// <summary>
-/// Tests de servicio de productos — Etapa 5 (RoadMap §8; RF-013 a RF-020,
-/// RF-076/RF-077). Sobre base de datos en memoria y storage falso
-/// (SDD §30.10).
+/// Tests de servicio de productos — Etapa 5 (RoadMap §8; RF-013 a RF-019,
+/// RF-076/RF-077). Sobre base de datos en memoria (SDD §30.10).
 /// </summary>
 public class ProductoServiceTests : IDisposable
 {
     private readonly KioscoDbContext _context;
-    private readonly FakeStorageService _storage;
     private readonly ProductoService _service;
 
     public ProductoServiceTests()
@@ -27,12 +25,10 @@ public class ProductoServiceTests : IDisposable
             .Options;
 
         _context = new KioscoDbContext(options);
-        _storage = new FakeStorageService();
         _service = new ProductoService(
             new ProductoRepository(_context),
             new RubroRepository(_context),
-            new StockRepository(_context),
-            _storage);
+            new StockRepository(_context));
     }
 
     public void Dispose() => _context.Dispose();
@@ -278,72 +274,5 @@ public class ProductoServiceTests : IDisposable
 
         resultado.PrecioVenta.Should().Be(999.99m);
         resultado.Costo.Should().Be(450.50m);
-    }
-
-    // ── RF-020: imágenes (carga, asociación, reemplazo, eliminación) ────────
-
-    private static Stream FakeImage() => new MemoryStream(new byte[] { 1, 2, 3 });
-
-    [Fact]
-    public async Task UploadImageAsync_AsociaLaUrlAlProducto()
-    {
-        var producto = await SeedProductoAsync();
-
-        var resultado = await _service.UploadImageAsync(
-            producto.Id, FakeImage(), "foto.png", "image/png");
-
-        resultado.ImagenUrl.Should().NotBeNullOrEmpty();
-        resultado.ImagenUrl.Should().StartWith("https://storage.googleapis.com/");
-        _storage.UploadedUrls.Should().ContainSingle();
-
-        var enDb = await _context.Productos.FindAsync(producto.Id);
-        enDb!.ImagenUrl.Should().Be(resultado.ImagenUrl, "RF-020: la URL se asocia en la BD (RNF-037)");
-    }
-
-    [Fact]
-    public async Task UploadImageAsync_ReemplazaLaAnterior_EliminandoLaVieja()
-    {
-        var producto = await SeedProductoAsync();
-
-        var primera = await _service.UploadImageAsync(producto.Id, FakeImage(), "a.png", "image/png");
-        var segunda = await _service.UploadImageAsync(producto.Id, FakeImage(), "b.png", "image/png");
-
-        segunda.ImagenUrl.Should().NotBe(primera.ImagenUrl);
-        _storage.DeletedUrls.Should().ContainSingle()
-            .Which.Should().Be(primera.ImagenUrl, "RF-020: reemplazo elimina la imagen anterior");
-    }
-
-    [Fact]
-    public async Task RemoveImageAsync_DesasociaYEliminaDelStorage()
-    {
-        var producto = await SeedProductoAsync();
-        var subida = await _service.UploadImageAsync(producto.Id, FakeImage(), "a.png", "image/png");
-
-        var resultado = await _service.RemoveImageAsync(producto.Id);
-
-        resultado.ImagenUrl.Should().BeNull();
-        _storage.DeletedUrls.Should().ContainSingle().Which.Should().Be(subida.ImagenUrl);
-    }
-
-    [Fact]
-    public async Task RemoveImageAsync_SinImagen_LanzaBusinessRule()
-    {
-        var producto = await SeedProductoAsync();
-
-        var act = () => _service.RemoveImageAsync(producto.Id);
-        await act.Should().ThrowAsync<BusinessRuleException>();
-    }
-
-    [Fact]
-    public async Task UploadImageAsync_FormatoNoPermitido_LanzaBusinessRule()
-    {
-        var producto = await SeedProductoAsync();
-
-        var act = () => _service.UploadImageAsync(
-            producto.Id, FakeImage(), "doc.pdf", "application/pdf");
-
-        await act.Should().ThrowAsync<BusinessRuleException>(
-            "solo se permiten imágenes JPEG/PNG/WebP/GIF (validación de RF-020)");
-        _storage.UploadedUrls.Should().BeEmpty("el storage no debe recibir archivos inválidos");
     }
 }

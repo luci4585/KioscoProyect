@@ -33,7 +33,6 @@ El desarrollo será incremental y estará acompañado por pruebas automatizadas 
   * C# en .NET 8 o superior (ASP.NET Core Web API).
   * Entity Framework Core & Npgsql (Provider para PostgreSQL).
   * Firebase Admin SDK (para validación de tokens en backend).
-  * Firebase Storage SDK (o integración equivalente Google Cloud Storage).
   * Swagger / OpenAPI para documentación dinámica de endpoints.
   * FluentValidation para la capa de validación de datos de entrada/DTOs.
   * Serilog para logging estructurado.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "@/services/api";
 import { Producto, Rubro } from "@/types";
 
@@ -57,11 +57,6 @@ export default function ProductosPage() {
   const [form, setForm] = useState<ProductoFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  // Imágenes (RF-020)
-  const [uploadingId, setUploadingId] = useState<number | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [imageTargetId, setImageTargetId] = useState<number | null>(null);
 
   const buildQueryString = (f: Filtros): string => {
     const params = new URLSearchParams();
@@ -221,51 +216,6 @@ export default function ProductosPage() {
       setTimeout(() => setInfo(null), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al dar de baja el producto");
-    }
-  };
-
-  // Imágenes (RF-020): carga y reemplazo.
-  const triggerImageUpload = (productoId: number) => {
-    setImageTargetId(productoId);
-    fileInputRef.current?.click();
-  };
-
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = ""; // permite reseleccionar el mismo archivo
-    if (!file || imageTargetId == null) return;
-
-    setError(null);
-    setUploadingId(imageTargetId);
-    try {
-      const formData = new FormData();
-      formData.append("imagen", file);
-      await api.upload<Producto>(`/api/Productos/${imageTargetId}/imagen`, formData);
-      setInfo("Imagen subida correctamente.");
-      await reload();
-      setTimeout(() => setInfo(null), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al subir la imagen");
-    } finally {
-      setUploadingId(null);
-      setImageTargetId(null);
-    }
-  };
-
-  // Imágenes (RF-020): eliminación.
-  const handleRemoveImage = async (producto: Producto) => {
-    if (!confirm(`¿Eliminar la imagen de "${producto.nombre}"?`)) return;
-    setError(null);
-    setUploadingId(producto.id);
-    try {
-      await api.delete<Producto>(`/api/Productos/${producto.id}/imagen`);
-      setInfo("Imagen eliminada correctamente.");
-      await reload();
-      setTimeout(() => setInfo(null), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al eliminar la imagen");
-    } finally {
-      setUploadingId(null);
     }
   };
 
@@ -529,14 +479,6 @@ export default function ProductosPage() {
         </div>
       )}
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
-        className="hidden"
-        onChange={handleImageChange}
-      />
-
       {!loading && !error && productos.length === 0 && (
         <p className="text-gray-600">No hay productos registrados.</p>
       )}
@@ -546,7 +488,6 @@ export default function ProductosPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700">Imagen</th>
                 <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700">Nombre</th>
                 <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700">Código</th>
                 <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700">Rubro</th>
@@ -560,20 +501,6 @@ export default function ProductosPage() {
             <tbody className="divide-y divide-gray-100">
               {productos.map((producto) => (
                 <tr key={producto.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2">
-                    {producto.imagenUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={producto.imagenUrl}
-                        alt={producto.nombre}
-                        className="h-10 w-10 rounded object-cover border border-gray-200"
-                      />
-                    ) : (
-                      <span className="inline-block h-10 w-10 rounded bg-gray-100 text-gray-400 text-center leading-10 text-xs">
-                        —
-                      </span>
-                    )}
-                  </td>
                   <td className="px-3 py-2 text-sm text-gray-900">{producto.nombre}</td>
                   <td className="px-3 py-2 text-sm text-gray-600 font-mono">{producto.codigo}</td>
                   <td className="px-3 py-2 text-sm text-gray-600">{producto.rubroNombre}</td>
@@ -609,29 +536,11 @@ export default function ProductosPage() {
                   </td>
                   <td className="px-3 py-2 text-sm text-right whitespace-nowrap">
                     <button
-                      onClick={() => triggerImageUpload(producto.id)}
-                      disabled={uploadingId === producto.id}
-                      className="text-blue-600 hover:text-blue-800 mr-3 disabled:opacity-50"
-                      title="Subir o reemplazar imagen"
-                    >
-                      {uploadingId === producto.id ? "Subiendo..." : "Imagen"}
-                    </button>
-                    <button
                       onClick={() => openEdit(producto)}
                       className="text-blue-600 hover:text-blue-800 mr-3"
                     >
                       Editar
                     </button>
-                    {producto.imagenUrl && (
-                      <button
-                        onClick={() => handleRemoveImage(producto)}
-                        disabled={uploadingId === producto.id}
-                        className="text-orange-600 hover:text-orange-800 mr-3 disabled:opacity-50"
-                        title="Eliminar imagen"
-                      >
-                        Quitar imagen
-                      </button>
-                    )}
                     {producto.activo && (
                       <button
                         onClick={() => handleDelete(producto)}

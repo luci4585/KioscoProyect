@@ -76,6 +76,10 @@ Como mínimo se contemplarán:
 - Operador administrativo.
 - Empleado.
 
+El rol **Administrador** es el **superusuario**: tendrá acceso completo a todas las funciones del sistema, incluido el control de roles, el control de usuarios y la gestión general.
+
+El rol **Empleado (vendedor)** tendrá acceso a las opciones básicas del sistema.
+
 ### RF-007 — Control de acceso
 
 El sistema deberá restringir el acceso a las funcionalidades según los permisos correspondientes al usuario autenticado.
@@ -133,7 +137,6 @@ Cada producto deberá poder contener, como mínimo:
 - Stock disponible.
 - Stock mínimo.
 - Estado.
-- Imagen.
 
 ### RF-014 — Identificación por rubro
 
@@ -164,12 +167,6 @@ El sistema deberá permitir deshabilitar productos que ya no sean comercializado
 ### RF-019 — Gestión de precios
 
 El sistema deberá permitir registrar y actualizar el precio de venta y costo de cada producto.
-
-### RF-020 — Gestión de imágenes
-
-El sistema deberá permitir asociar imágenes a los productos.
-
-Las imágenes deberán almacenarse mediante Firebase Storage.
 
 ---
 
@@ -839,6 +836,8 @@ Se contemplarán inicialmente:
 - Operador administrativo.
 - Empleado.
 
+El rol **Administrador** es el **superusuario** (acceso completo a todas las funciones del sistema, incluido el control de roles y usuarios). El rol **Empleado (vendedor)** tendrá acceso a las opciones básicas del sistema.
+
 ### RNF-033 — Permisos granulares
 
 La arquitectura deberá prever permisos granulares para evitar quedar limitada a roles rígidos.
@@ -862,30 +861,6 @@ usuarios.gestionar
 Los endpoints deberán verificar que el usuario autenticado posea el rol o permiso necesario antes de ejecutar operaciones protegidas.
 
 ---
-
-## 21. Firebase Storage
-
-### RNF-035 — Almacenamiento de imágenes
-
-Las imágenes de productos deberán almacenarse mediante Firebase Storage.
-
-### RNF-036 — Integración
-
-El backend deberá utilizar Firebase Storage SDK o una integración mediante Google Cloud Storage compatible.
-
-### RNF-037 — Referencias de imágenes
-
-PostgreSQL deberá almacenar únicamente la información necesaria para identificar o acceder a la imagen almacenada en Firebase Storage.
-
-### RNF-038 — Gestión de imágenes
-
-El sistema deberá permitir, según corresponda:
-
-- Cargar imágenes.
-- Asociar imágenes a productos.
-- Reemplazar imágenes.
-- Eliminar imágenes.
-- Consultar imágenes.
 
 ---
 
@@ -935,7 +910,6 @@ La infraestructura deberá contener las implementaciones concretas relacionadas 
 - Entity Framework Core.
 - Npgsql.
 - Firebase.
-- Storage.
 - Logging.
 - Otros servicios externos.
 
@@ -978,8 +952,7 @@ Backend/
 │   │   └── Migrations/
 │   │
 │   ├── Firebase/
-│   │   ├── Authentication/
-│   │   └── Storage/
+│   │   └── Authentication/
 │   │
 │   └── Logging/
 │
@@ -1238,12 +1211,6 @@ La comunicación entre frontend y backend se realizará mediante APIs REST utili
                        │
                        ▼
                 Firebase Auth
-
-
-              ASP.NET Core Web API
-                       │
-                       ▼
-                Firebase Storage
 ```
 
 ---
@@ -1360,7 +1327,7 @@ La lógica de negocio deberá encontrarse en el centro de la aplicación, mientr
         │   PostgreSQL   │ │    Firebase   │ │    Logging    │
         │                │ │               │ │               │
         │ EF Core        │ │ Admin SDK     │ │   Serilog     │
-        │ Npgsql         │ │ Storage       │ │               │
+        │ Npgsql         │ │               │ │               │
         └───────┬────────┘ └───────────────┘ └───────────────┘
                 │
                 ▼
@@ -1439,7 +1406,6 @@ IStockRepository
 IClienteRepository
 IProveedorRepository
 ICajaRepository
-IStorageService
 IAuthenticationService
 ```
 
@@ -1473,7 +1439,6 @@ Principalmente:
 ```text
 PostgreSQL Adapter
 Firebase Adapter
-Storage Adapter
 Logging Adapter
 ```
 
@@ -1526,22 +1491,6 @@ Roles / Permisos
    ↓
 Autorización
 ```
-
----
-
-## 30.8 Storage en arquitectura hexagonal
-
-El almacenamiento de imágenes utilizará un puerto:
-
-```text
-IStorageService
-       ↓
-FirebaseStorageAdapter
-       ↓
-Firebase Storage
-```
-
-El dominio y los casos de uso no deberán depender directamente de Firebase Storage.
 
 ---
 
@@ -1612,7 +1561,6 @@ El stack tecnológico definido para el proyecto será:
 | Estilos | Tailwind CSS o librería visual a definir |
 | Autenticación frontend | Firebase Auth SDK |
 | Autenticación backend | Firebase Admin SDK |
-| Storage | Firebase Storage / Google Cloud Storage compatible |
 | Validaciones | FluentValidation |
 | Logging | Serilog |
 | Documentación API | Swagger / OpenAPI |
@@ -1663,7 +1611,6 @@ El frontend no deberá acceder directamente a PostgreSQL.
 - Entity Framework Core.
 - Npgsql para PostgreSQL.
 - Firebase Admin SDK.
-- Firebase Storage SDK o integración mediante Google Cloud Storage compatible.
 - Swagger/OpenAPI para documentación.
 - FluentValidation para validaciones.
 - Serilog para logging estructurado.
@@ -1727,17 +1674,6 @@ Firebase Authentication será responsable de:
 - Verificación de identidad.
 
 No reemplazará al modelo de usuarios interno.
-
----
-
-## 31.5 Firebase Storage
-
-Firebase Storage será utilizado para:
-
-- Imágenes de productos.
-- Archivos que eventualmente requiera el sistema.
-
-PostgreSQL almacenará las referencias necesarias, no los archivos binarios.
 
 ---
 
@@ -2055,16 +1991,6 @@ Implementar el catálogo.
 - Precios.
 - Costos.
 - Asociación con rubros.
-- Imágenes.
-
-### Firebase Storage
-
-Integrar:
-
-- Carga.
-- Asociación.
-- Reemplazo.
-- Eliminación.
 
 ### Tests
 
@@ -2364,7 +2290,6 @@ Revisar:
 - Consultas.
 - Variables de entorno.
 - Permisos Firebase.
-- Seguridad de Storage.
 - Código duplicado.
 - Organización.
 
@@ -2495,7 +2420,6 @@ El proyecto se considerará preparado para su entrega cuando:
 - Frontend y backend estén correctamente integrados.
 - PostgreSQL almacene correctamente la información.
 - Firebase Authentication gestione la autenticación.
-- Firebase Storage gestione las imágenes.
 - El backend respete la Arquitectura Hexagonal.
 - Las APIs REST estén implementadas.
 - Los DTOs estén implementados.

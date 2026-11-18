@@ -125,15 +125,92 @@ public class EndpointProtectionTests
         GetAction(nameof(ProductosController), nameof(ProductosController.DeleteProducto))!
             .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
             .Should().Be("productos.eliminar");
+    }
 
-        // RF-020 imágenes: requiere permiso de edición del producto.
-        GetAction(nameof(ProductosController), nameof(ProductosController.UploadImagen))!
-            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
-            .Should().Be("productos.editar");
+    [Fact]
+    public void Clientes_Endpoints_SiguenElPatronDePermisos()
+    {
+        // Consultas → solo autenticación (RF-028, RF-029).
+        GetAction(nameof(ClientesController), nameof(ClientesController.GetClientes))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull("la consulta de clientes es accesible a todo usuario interno autenticado");
 
-        GetAction(nameof(ProductosController), nameof(ProductosController.DeleteImagen))!
+        GetAction(nameof(ClientesController), nameof(ClientesController.Search))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        GetAction(nameof(ClientesController), nameof(ClientesController.GetCliente))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        // Escritura → clientes.gestionar (RF-027, RF-030, RF-031, RNF-034).
+        GetAction(nameof(ClientesController), nameof(ClientesController.CreateCliente))!
             .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
-            .Should().Be("productos.editar");
+            .Should().Be("clientes.gestionar");
+
+        GetAction(nameof(ClientesController), nameof(ClientesController.UpdateCliente))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("clientes.gestionar");
+
+        GetAction(nameof(ClientesController), nameof(ClientesController.DeleteCliente))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("clientes.gestionar");
+    }
+
+    [Fact]
+    public void Proveedores_Endpoints_SiguenElPatronDePermisos()
+    {
+        // Consultas → solo autenticación (RF-033).
+        GetAction(nameof(ProveedoresController), nameof(ProveedoresController.GetProveedores))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull("la consulta de proveedores es accesible a todo usuario interno autenticado");
+
+        GetAction(nameof(ProveedoresController), nameof(ProveedoresController.Search))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        GetAction(nameof(ProveedoresController), nameof(ProveedoresController.GetProveedor))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        // Escritura → proveedores.gestionar (RF-032, RF-034, RF-035, RNF-034).
+        GetAction(nameof(ProveedoresController), nameof(ProveedoresController.CreateProveedor))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("proveedores.gestionar");
+
+        GetAction(nameof(ProveedoresController), nameof(ProveedoresController.UpdateProveedor))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("proveedores.gestionar");
+
+        GetAction(nameof(ProveedoresController), nameof(ProveedoresController.DeleteProveedor))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("proveedores.gestionar");
+    }
+
+    [Fact]
+    public void Stock_Endpoints_SiguenElPatronDePermisos()
+    {
+        // Consultas → solo autenticación (RF-021, RF-026).
+        GetAction(nameof(StockController), nameof(StockController.GetStock))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull("la consulta de stock es accesible a todo usuario interno autenticado");
+
+        GetAction(nameof(StockController), nameof(StockController.GetAlertas))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        GetAction(nameof(StockController), nameof(StockController.GetStockByProducto))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        // Movimientos → stock.gestionar (RF-022, RF-023, RNF-034).
+        GetAction(nameof(StockController), nameof(StockController.Ingresar))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("stock.gestionar");
+
+        GetAction(nameof(StockController), nameof(StockController.Egresar))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("stock.gestionar");
     }
 
     [Fact]

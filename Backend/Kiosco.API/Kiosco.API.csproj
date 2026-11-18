@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <PackageReference Include="FirebaseAdmin" Version="3.6.0" />
+    <!-- Versión con la que venía resolviendo la API (vía Google.Cloud.Storage.V1,
+         retirado en la Etapa 5): evita la regresión a 1.73.0 con FromJson obsoleto. -->
+    <PackageReference Include="Google.Apis.Auth" Version="1.75.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.*">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

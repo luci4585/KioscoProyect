@@ -33,4 +33,12 @@ public class StockRepository : GenericRepository<Stock>, IStockRepository
 
         return stock != null && stock.Cantidad >= cantidad;
     }
+
+    public async Task<IEnumerable<Stock>> GetAlertasAsync()
+    {
+        return await _context.Stocks
+            .Include(s => s.Producto)
+            .Where(s => s.Activo && s.Cantidad <= s.Producto.StockMinimo)
+            .ToListAsync();
+    }
 }

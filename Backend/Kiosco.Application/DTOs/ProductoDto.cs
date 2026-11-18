@@ -12,7 +12,6 @@ public class ProductoDto
     public decimal Costo { get; set; }
     public int StockActual { get; set; }
     public int StockMinimo { get; set; }
-    public string? ImagenUrl { get; set; }
     public bool Activo { get; set; }
 }
 

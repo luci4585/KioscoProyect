@@ -3,7 +3,6 @@ using Kiosco.API.Authorization;
 using Kiosco.Application.DTOs;
 using Kiosco.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kiosco.API.Controllers;
@@ -96,34 +95,6 @@ public class ProductosController : ControllerBase
     {
         await _productoService.DeleteAsync(id);
         return NoContent();
-    }
-
-    // ── Imágenes (RF-020, RNF-035 a RNF-038) ───────────────────────────────
-
-    [HttpPost("{id:int}/imagen")]
-    [RequirePermission("productos.editar")]
-    [RequestSizeLimit(10 * 1024 * 1024)]
-    public async Task<ActionResult<ProductoDto>> UploadImagen(int id, IFormFile imagen)
-    {
-        if (imagen == null || imagen.Length == 0)
-            return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
-            {
-                ["imagen"] = new[] { "La imagen es requerida." }
-            }));
-
-        using var stream = imagen.OpenReadStream();
-        var producto = await _productoService.UploadImageAsync(
-            id, stream, imagen.FileName, imagen.ContentType);
-
-        return Ok(producto);
-    }
-
-    [HttpDelete("{id:int}/imagen")]
-    [RequirePermission("productos.editar")]
-    public async Task<ActionResult<ProductoDto>> DeleteImagen(int id)
-    {
-        var producto = await _productoService.RemoveImageAsync(id);
-        return Ok(producto);
     }
 
     // ── Utilidades ──────────────────────────────────────────────────────────

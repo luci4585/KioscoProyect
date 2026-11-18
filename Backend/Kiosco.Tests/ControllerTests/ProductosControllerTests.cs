@@ -7,20 +7,18 @@ using Kiosco.Domain.Entities;
 using Kiosco.Infrastructure.Persistence.Context;
 using Kiosco.Infrastructure.Persistence.Repositories;
 using Kiosco.Tests.UnitTests;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kiosco.Tests.ControllerTests;
 
 /// <summary>
-/// Tests de controller de productos con base de datos en memoria y storage
-/// falso — Etapa 5 (RF-013 a RF-020, RNF-017 códigos HTTP, RNF-062).
+/// Tests de controller de productos con base de datos en memoria —
+/// Etapa 5 (RF-013 a RF-019, RNF-017 códigos HTTP, RNF-062).
 /// </summary>
 public class ProductosControllerTests : IDisposable
 {
     private readonly KioscoDbContext _context;
-    private readonly FakeStorageService _storage;
     private readonly ProductosController _controller;
 
     public ProductosControllerTests()
@@ -30,13 +28,11 @@ public class ProductosControllerTests : IDisposable
             .Options;
 
         _context = new KioscoDbContext(options);
-        _storage = new FakeStorageService();
         _controller = new ProductosController(
             new ProductoService(
                 new ProductoRepository(_context),
                 new RubroRepository(_context),
-                new StockRepository(_context),
-                _storage),
+                new StockRepository(_context)),
             new ProductoCreateValidator(),
             new ProductoUpdateValidator());
     }
@@ -50,8 +46,6 @@ public class ProductosControllerTests : IDisposable
         await _context.SaveChangesAsync();
         return rubro.Id;
     }
-
-    private static Stream FakeImage() => new MemoryStream(new byte[] { 1, 2, 3 });
 
     // ── RF-013 / RNF-017: alta y códigos HTTP ──────────────────────────────
 
@@ -196,83 +190,5 @@ public class ProductosControllerTests : IDisposable
         result.Should().BeOfType<NoContentResult>();
         (await _context.Productos.IgnoreQueryFilters().FirstAsync(p => p.Id == id))
             .Activo.Should().BeFalse("RF-018: baja lógica");
-    }
-
-    // ── RF-020: imágenes ───────────────────────────────────────────────────
-
-    private async Task<int> SeedProductoConImagenAsync()
-    {
-        var rubroId = await SeedRubroAsync();
-        var created = await _controller.CreateProducto(new ProductoCreateDto
-        {
-            Nombre = "Con Imagen",
-            Codigo = "IMG-1",
-            RubroId = rubroId,
-            PrecioVenta = 10,
-            Costo = 5
-        });
-        return ((ProductoDto)((CreatedAtActionResult)created.Result!).Value!).Id;
-    }
-
-    private static IFormFile Archivo(string contentType, string nombre = "foto.png")
-    {
-        return new FormFile(new MemoryStream(new byte[] { 1, 2, 3 }), 0, 3, "imagen", nombre)
-        {
-            Headers = new HeaderDictionary(),
-            ContentType = contentType
-        };
-    }
-
-    [Fact]
-    public async Task UploadImagen_ConArchivoValido_Return200ConImagenAsociada()
-    {
-        var id = await SeedProductoConImagenAsync();
-
-        var result = await _controller.UploadImagen(id, Archivo("image/png"));
-
-        var ok = result.Result.Should().BeOfType<OkObjectResult>().Subject;
-        ((ProductoDto)ok.Value!).ImagenUrl.Should().NotBeNullOrEmpty();
-        _storage.UploadedUrls.Should().ContainSingle();
-    }
-
-    [Fact]
-    public async Task UploadImagen_SinArchivo_Return400()
-    {
-        var id = await SeedProductoConImagenAsync();
-
-        var result = await _controller.UploadImagen(id, null!);
-
-        var badRequest = result.Result.Should().BeAssignableTo<ObjectResult>().Which;
-        badRequest.StatusCode.Should().Be(400);
-        _storage.UploadedUrls.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task UploadImagen_ProductoInexistente_ReturnEntityNotFound()
-    {
-        var act = () => _controller.UploadImagen(9999, Archivo("image/png"));
-        await act.Should().ThrowAsync<Domain.Exceptions.EntityNotFoundException>();
-    }
-
-    [Fact]
-    public async Task DeleteImagen_ConImagen_Return200SinImagen()
-    {
-        var id = await SeedProductoConImagenAsync();
-        await _controller.UploadImagen(id, Archivo("image/png"));
-
-        var result = await _controller.DeleteImagen(id);
-
-        var ok = result.Result.Should().BeOfType<OkObjectResult>().Subject;
-        ((ProductoDto)ok.Value!).ImagenUrl.Should().BeNull();
-        _storage.DeletedUrls.Should().ContainSingle();
-    }
-
-    [Fact]
-    public async Task DeleteImagen_SinImagen_ReturnBusinessRule()
-    {
-        var id = await SeedProductoConImagenAsync();
-
-        var act = () => _controller.DeleteImagen(id);
-        await act.Should().ThrowAsync<Domain.Exceptions.BusinessRuleException>();
     }
 }

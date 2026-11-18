@@ -2,11 +2,11 @@
 
 ## Estado del Proyecto
 
-Proyecto en **implementación activa**. Última auditoría de estado: **15/11/2026**.
+Proyecto en **implementación activa**. Última auditoría de estado: **18/11/2026**.
 
-**Cierres autorizados por el responsable (15/11/2026) — Etapas 0, 1, 2, 4 y 5 cerradas:**
+**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5 y 6 el 18/11/2026) — Etapas 0, 1, 2, 4, 5 y 6 cerradas:**
 
-- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **82/82 en verde**,
+- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **139/139 en verde**,
   `npm run lint` y `npm run build` correctos.
 - **Etapa 0 (Preparación) ✅ cerrada:** ejecutabilidad verificada — la API arranca y sirve
   Swagger (HTTP 200) y `GET /api/Rubros` responde 401 sin token (protección activa).
@@ -19,19 +19,52 @@ Proyecto en **implementación activa**. Última auditoría de estado: **15/11/20
   se invocarán al crear sus controllers en las Etapas 6–10, según corresponda.
 - **Etapa 4 (Rubros) ✅ cerrada (15/11/2026):** API CRUD con validadores invocados y permiso
   `rubros.gestionar`, frontend de alta/modificación/baja lógica, 27 tests de la etapa.
-- **Etapa 5 (Productos): implementación completada, CIERRE PENDIENTE de smoke test E2E**
-  (login real + CRUD + imagen contra Firebase/PostgreSQL) — ver detalle más abajo.
+- **Etapa 5 (Productos) ✅ cerrada (18/11/2026):** catálogo completo — alta, consulta,
+  búsqueda con filtros (RF-016), modificación, baja lógica, precios/costos y asociación con
+  rubros; permisos granulares (`productos.consultar/crear/editar/eliminar`), frontend
+  `/productos`, **sin imágenes** (fuera de alcance por decisión del responsable del
+  18/11/2026), tests de la etapa en verde (**72/72 en total**) y smoke test E2E de login
+  real + CRUD verificado contra Firebase/PostgreSQL. **Cierre autorizado por el responsable
+  el 18/11/2026.**
+- **Etapa 6 (Clientes y proveedores) ✅ cerrada (18/11/2026):** CRUD de clientes
+  (RF-027 a RF-031) y de proveedores (RF-032 a RF-035) con búsquedas (RF-029 nombre/
+  documento; razón social/CUIT para proveedores), validadores Create+Update invocados,
+  permisos sembrados `clientes.gestionar` / `proveedores.gestionar` (cero migraciones),
+  consultas solo autenticación, frontend `/clientes` y `/proveedores`, baja lógica,
+  **67 tests nuevos (139/139 en verde)** y smoke test E2E real **22/22 pasos**
+  (403 sin permiso, CRUD + búsquedas + 400 de validación + CUIT duplicado + bajas
+  lógicas, contra Firebase/PostgreSQL). **Cierre autorizado por el responsable
+  el 18/11/2026.**
 
-**Etapa 5 (Productos) — detalle de implementación (cierre pendiente de verificación E2E):** API de productos con búsqueda y filtros (nombre, código,
-rubro, estado, stock — RF-016), validadores invocados, permisos granulares
-(`productos.consultar/crear/editar/eliminar`), frontend `/productos` completo (alta,
-consulta, filtros, modificación, baja lógica, imágenes), puerto `IStorageService` +
-adaptador `FirebaseStorageAdapter` (RNF-036, bucket real
-`kiosco-proyect.firebasestorage.app`), validación de tipo/tamaño de imagen, 31 tests de la
-etapa (82/82 en total).
+**Etapa 5 (Productos) — detalle del cierre (cerrada el 18/11/2026):**
+API de productos con búsqueda y filtros (nombre, código, rubro, estado, stock — RF-016),
+validadores invocados, permisos granulares (`productos.consultar/crear/editar/eliminar`),
+frontend `/productos` completo (alta, consulta, filtros, modificación, baja lógica),
+21 tests de la etapa (72/72 en total).
 
-**Etapa actual: Etapa 5 — Productos** (RoadMap §8), a la espera del smoke test E2E
-autorizado para su cierre.
+**Etapa actual: Etapa 6 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
+**Etapa 7 — Stock** (§10), **autorizada e en curso por el responsable el 18/11/2026**.
+
+**Decisión del responsable (18/11/2026) — especificación de roles:** el **superusuario**
+es el rol **Administrador** (acceso completo a todas las funciones del sistema: control de
+roles, control de usuarios y gestión general); el rol **vendedor** es el **Empleado**
+(acceso a las opciones básicas del sistema). Documentado en el SDD (RF-006 y RNF-032) y en
+el RoadMap (§6 Etapa 3 — Actividades).
+
+**Decisión del responsable (18/11/2026) — eliminación de la función de imágenes:** la
+función de guardar imágenes de productos queda **fuera del alcance** del sistema: se
+eliminó del `RoadMap.md` (actividades y Firebase Storage de la Etapa 5), del
+`SDD_Sistema_Gestion_Kiosco.md` (RF-020, RNF-035 a RNF-038 y demás menciones) y del
+código (endpoints, puerto `IStorageService`, adaptador, UI y tests). La columna
+`ImagenUrl` permanece inerte en la BD sin migración. Los pasos de imagen del smoke test
+E2E (B8–B11) quedan anulados por cambio de alcance, no pendientes.
+
+**Estado del build (18/11/2026):** `dotnet build` (rebuild completo) queda con **1
+advertencia preexistente CS0618** (`Program.cs:65`, código de la Etapa 3,
+`GoogleCredential.FromJson`) **dejada a propósito** por decisión del responsable: no afecta
+el funcionamiento ni es error. Los "0 advertencias" históricos corresponden a builds
+incrementales; la advertencia ya existía en el HEAD `c6828b6` (verificado con build de
+revisión aislado) — es ajena a la eliminación de imágenes.
 
 > Los porcentajes de esta sección son **estimaciones de la auditoría del 15/11/2026**,
 > recalculadas tras los cierres de las Etapas 0–4. Metodología: se toman las tareas
@@ -47,23 +80,28 @@ autorizado para su cierre.
 - **Etapa 2 (Arquitectura backend): ✅ CERRADA (15/11/2026).**
 - **Etapa 3 (Autenticación y autorización): ✅ CERRADA (15/11/2026).** 24 tests.
 - **Etapa 4 (Rubros): ✅ CERRADA (15/11/2026).** 27 tests; 51/51 en total.
-- **Etapa 5 (Productos) — ACTUAL:** RoadMap §8 — alta, consulta, búsqueda, filtros,
-  modificación, baja lógica, precios, costos, asociación con rubros, imágenes
-  (Firebase Storage: carga, asociación, reemplazo, eliminación) y tests.
-  Existe código de servicio adelantado (ProductoService, DTOs, validador) sin API,
-  frontend, storage ni tests.
-- **Etapas 6 a 10:** existe código de servicio adelantado (Cliente, Proveedor, Stock,
-  IngresoMercaderia, Venta, Caja) **sin API, sin frontend y sin tests**. Trabajo fuera
-  de orden: no se considera cerrado ni autoriza a avanzar.
+- **Etapa 5 (Productos): ✅ CERRADA (18/11/2026).** RoadMap §8 — alta, consulta, búsqueda,
+  filtros, modificación, baja lógica, precios, costos, asociación con rubros y tests, **sin
+  imágenes** (fuera de alcance por decisión del responsable del 18/11/2026). E2E de login
+  real + CRUD verificado; 72/72 tests en verde.
+- **Etapa 6 (Clientes y proveedores): ✅ CERRADA (18/11/2026).** RoadMap §9 — CRUD de
+  clientes, CRUD de proveedores, búsquedas, baja lógica y tests. E2E real 22/22;
+  139/139 tests en verde.
+- **Etapa 7 (Stock) — EN CURSO (18/11/2026, autorizada):** RoadMap §10 — consulta,
+  ingreso, egreso, stock mínimo, alertas y actualización automática.
+- **Etapas 8 a 10:** existe código de servicio adelantado (IngresoMercaderia, Venta,
+  Caja) **sin API, sin frontend y sin tests**. Trabajo fuera de orden: no se considera
+  cerrado ni autoriza a avanzar.
 - **Etapas 11 a 17:** no iniciadas.
-- **Tests en el proyecto: 51, todos en verde.**
+- **Tests en el proyecto: 139, todos en verde (18/11/2026, tras el cierre de la Etapa 6).**
 
-**Diagnóstico de siguiente tarea (no es autorización para ejecutarla):** según el orden de
-`RoadMap.md`, corresponde completar la **Etapa 5 (Productos)**: API de productos con
-búsqueda/filtros, frontend, integración de Firebase Storage para imágenes y tests. Antes de
-iniciar cualquier tarea deben consultarse los requisitos y criterios exactos aplicables en
-`RoadMap.md` y en el SDD. La ejecución requiere autorización expresa del responsable del
-proyecto.
+**Diagnóstico de siguiente tarea:** la **Etapa 6 (Clientes y proveedores)** está
+**cerrada (18/11/2026)**. Según el orden de `RoadMap.md`, corresponde la **Etapa 7 —
+Stock** (§10): consulta, ingreso, egreso, stock mínimo, alertas, actualización
+automática y sus tests (incrementos, disminuciones, stock insuficiente, stock mínimo) —
+**autorizada por el responsable el 18/11/2026**. Antes de iniciar cualquier tarea deben
+consultarse los requisitos y criterios exactos aplicables en `RoadMap.md` y en el SDD.
+El cierre de la etapa requerirá autorización expresa del responsable del proyecto.
 
 Avance global estimado al 15/11/2026 (recalculado tras los cierres de Etapas 0–4):
 **~37% estricto / ~47% ponderado** (misma metodología descrita arriba, aplicada a las
@@ -76,7 +114,6 @@ Sistema de gestión integral para kioscos (autoservicios):
 - **Frontend:** Next.js 16 / TypeScript / React 19 / Tailwind CSS 4
 - **Base de datos:** PostgreSQL (local, nativo en Windows)
 - **Auth:** Firebase Authentication (frontend) + Firebase Admin SDK (backend)
-- **Storage:** Firebase Storage (imágenes de productos, pendiente — Etapa 5)
 - **Arquitectura:** Hexagonal (Ports and Adapters)
 
 ## Documentos clave
@@ -84,7 +121,7 @@ Sistema de gestión integral para kioscos (autoservicios):
 | Archivo | Propósito | Autoridad |
 |---------|-----------|-----------|
 | `RoadMap.md` | 18 etapas de implementación (Etapa 0-17). | **Autoridad única en el orden de implementación y el alcance por etapa.** |
-| `SDD_Sistema_Gestion_Kiosco.md` | **Referencia principal de requisitos.** 79 requerimientos funcionales (RF-001 a RF-079), 72 requerimientos no funcionales, arquitectura, estrategia de testing, criterios de finalización (Parte VIII). | **Autoridad en requisitos y criterios de aceptación.** |
+| `SDD_Sistema_Gestion_Kiosco.md` | **Referencia principal de requisitos.** 78 requerimientos funcionales (RF-001 a RF-079, sin RF-020), 68 requerimientos no funcionales (sin RNF-035 a RNF-038), arquitectura, estrategia de testing, criterios de finalización (Parte VIII). | **Autoridad en requisitos y criterios de aceptación.** |
 | `Base_tecnica.md` | Resumen del stack tecnológico. | Complementario. |
 
 **Consulta obligatoria:** antes de iniciar cualquier tarea se deben leer (o releer) el

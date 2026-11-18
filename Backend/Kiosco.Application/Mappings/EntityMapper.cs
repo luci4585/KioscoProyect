@@ -25,7 +25,6 @@ public static class EntityMapper
         Costo = entity.Costo,
         StockActual = entity.Stock?.Cantidad ?? 0,
         StockMinimo = entity.StockMinimo,
-        ImagenUrl = entity.ImagenUrl,
         Activo = entity.Activo
     };
 

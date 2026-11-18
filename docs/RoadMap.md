@@ -30,7 +30,6 @@ El objetivo es construir el sistema progresivamente, manteniendo en todo momento
   * C# en .NET 8 o superior (ASP.NET Core Web API)
   * Entity Framework Core & Npgsql para PostgreSQL
   * Firebase Admin SDK (para validación de tokens en backend)
-  * Firebase Storage SDK o integración mediante Google Cloud Storage compatible
   * Swagger / OpenAPI para documentación
   * FluentValidation para la capa de validación
   * Serilog para logging estructurado
@@ -174,6 +173,8 @@ Implementar acceso seguro.
 - Usuario interno.
 - Roles.
 - Permisos.
+- Superusuario (rol Administrador): acceso completo a todas las funciones del sistema (control de roles, usuarios y gestión general).
+- Rol vendedor (Empleado): acceso a las opciones básicas del sistema.
 - Protección de endpoints.
 
 ### Testing
@@ -224,16 +225,6 @@ Implementar el catálogo.
 - Precios.
 - Costos.
 - Asociación con rubros.
-- Imágenes.
-
-### Firebase Storage
-
-Integrar:
-
-- Carga.
-- Asociación.
-- Reemplazo.
-- Eliminación.
 
 ### Tests
 
@@ -533,7 +524,6 @@ Revisar:
 - Consultas.
 - Variables de entorno.
 - Permisos Firebase.
-- Seguridad de Storage.
 - Código duplicado.
 - Organización.
 

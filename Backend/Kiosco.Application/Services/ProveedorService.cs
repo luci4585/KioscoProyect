@@ -28,6 +28,12 @@ public class ProveedorService : IProveedorService
         return proveedor?.ToDto();
     }
 
+    public async Task<IEnumerable<ProveedorDto>> SearchAsync(string? razonSocial, string? cuit)
+    {
+        var proveedores = await _repository.SearchAsync(razonSocial, cuit);
+        return proveedores.Select(p => p.ToDto());
+    }
+
     public async Task<ProveedorDto> CreateAsync(ProveedorCreateDto dto)
     {
         if (!string.IsNullOrWhiteSpace(dto.Cuit))

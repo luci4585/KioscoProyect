@@ -18,7 +18,6 @@ export interface Producto {
   costo: number;
   stockActual: number;
   stockMinimo: number;
-  imagenUrl?: string;
   activo: boolean;
   fechaCreacion: string;
   fechaModificacion?: string;
@@ -28,9 +27,10 @@ export interface Cliente {
   id: number;
   nombre: string;
   apellido: string;
-  dni?: string;
+  documento?: string;
   telefono?: string;
   email?: string;
+  direccion?: string;
   activo: boolean;
   fechaCreacion: string;
 }
@@ -44,6 +44,16 @@ export interface Proveedor {
   direccion?: string;
   activo: boolean;
   fechaCreacion: string;
+}
+
+export interface Stock {
+  id: number;
+  productoId: number;
+  productoNombre: string;
+  productoCodigo: string;
+  cantidad: number;
+  stockMinimo: number;
+  stockBajo: boolean;
 }
 
 export interface Usuario {

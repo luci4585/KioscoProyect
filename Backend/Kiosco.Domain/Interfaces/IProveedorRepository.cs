@@ -5,4 +5,5 @@ namespace Kiosco.Domain.Interfaces;
 public interface IProveedorRepository : IGenericRepository<Proveedor>
 {
     Task<Proveedor?> GetByCuitAsync(string cuit);
+    Task<IEnumerable<Proveedor>> SearchAsync(string? razonSocial, string? cuit);
 }
