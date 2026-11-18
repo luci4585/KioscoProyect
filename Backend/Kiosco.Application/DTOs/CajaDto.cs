@@ -14,6 +14,7 @@ public class CajaDto
     public decimal TotalIngresos { get; set; }
     public decimal TotalEgresos { get; set; }
     public decimal SaldoCalculado { get; set; }
+    public List<MovimientoCajaDto> Movimientos { get; set; } = new();
 }
 
 public class CajaAperturaDto

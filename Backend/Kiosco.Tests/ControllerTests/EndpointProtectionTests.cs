@@ -255,6 +255,36 @@ public class EndpointProtectionTests
     }
 
     [Fact]
+    public void Cajas_Endpoints_RequierenPermisosDeCaja()
+    {
+        // Consultas → solo autenticación (RF-054, RF-055, RF-058).
+        GetAction(nameof(CajasController), nameof(CajasController.GetCajas))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull("la consulta de caja es accesible a todo usuario interno autenticado");
+
+        GetAction(nameof(CajasController), nameof(CajasController.GetCajaAbierta))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        GetAction(nameof(CajasController), nameof(CajasController.GetCaja))!
+            .GetCustomAttribute<RequirePermissionAttribute>()
+            .Should().BeNull();
+
+        // Escritura → permisos sembrados de caja (RF-051, RF-052, RF-056).
+        GetAction(nameof(CajasController), nameof(CajasController.AbrirCaja))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("caja.abrir");
+
+        GetAction(nameof(CajasController), nameof(CajasController.CerrarCaja))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("caja.cerrar");
+
+        GetAction(nameof(CajasController), nameof(CajasController.RegistrarMovimiento))!
+            .GetCustomAttribute<RequirePermissionAttribute>()?.Codigo
+            .Should().Be("caja.movimientos");
+    }
+
+    [Fact]
     public void AuthMe_NoRequierePermiso_PeroSiAutenticacion()
     {
         // /api/auth/me es el punto de entrada tras el login (RF-001): exige

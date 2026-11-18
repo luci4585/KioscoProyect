@@ -95,6 +95,31 @@ export interface Venta {
   detalles: DetalleVenta[];
 }
 
+export interface MovimientoCaja {
+  id: number;
+  fecha: string;
+  tipoMovimiento: string;
+  monto: number;
+  descripcion?: string | null;
+  usuarioNombre: string;
+}
+
+export interface Caja {
+  id: number;
+  fechaApertura: string;
+  fechaCierre?: string | null;
+  montoInicial: number;
+  montoFinal?: number | null;
+  diferencia?: number | null;
+  abierta: boolean;
+  usuarioAperturaNombre: string;
+  usuarioCierreNombre?: string | null;
+  totalIngresos: number;
+  totalEgresos: number;
+  saldoCalculado: number;
+  movimientos: MovimientoCaja[];
+}
+
 export interface Usuario {
   id: number;
   firebaseUid: string;

@@ -4,6 +4,7 @@ namespace Kiosco.Application.Interfaces;
 
 public interface ICajaService
 {
+    Task<IEnumerable<CajaDto>> GetAllAsync();
     Task<CajaDto?> GetCajaAbiertaAsync();
     Task<CajaDto> AbrirAsync(CajaAperturaDto dto, int usuarioId);
     Task<CajaDto> CerrarAsync(int cajaId, CajaCierreDto dto, int usuarioId);

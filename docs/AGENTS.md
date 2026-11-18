@@ -4,9 +4,9 @@
 
 Proyecto en **implementación activa**. Última auditoría de estado: **18/11/2026**.
 
-**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5, 6, 7 y 8 el 18/11/2026) — Etapas 0, 1, 2, 4, 5, 6, 7 y 8 cerradas:**
+**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5 a 9 el 18/11/2026) — Etapas 0, 1, 2, 4, 5, 6, 7, 8 y 9 cerradas:**
 
-- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **187/187 en verde**,
+- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **223/223 en verde**,
   `npm run lint` y `npm run build` correctos.
 - **Etapa 0 (Preparación) ✅ cerrada:** ejecutabilidad verificada — la API arranca y sirve
   Swagger (HTTP 200) y `GET /api/Rubros` responde 401 sin token (protección activa).
@@ -16,8 +16,8 @@ Proyecto en **implementación activa**. Última auditoría de estado: **18/11/20
   validadores FluentValidation están registrados y **invocados en los controllers
   existentes** (`RubrosController`, `UsuariosController`, `ProductosController` → 400 con
   detalle). Los validadores de entidades sin controller (Cliente y Proveedor ya invocados
-  en la Etapa 6; Venta y Caja) se invocarán al crear sus controllers en las Etapas 9–10,
-  según corresponda.
+  en la Etapa 6; Venta en la Etapa 9; Caja se invocará al crear su controller en la
+  Etapa 10).
 - **Etapa 4 (Rubros) ✅ cerrada (15/11/2026):** API CRUD con validadores invocados y permiso
   `rubros.gestionar`, frontend de alta/modificación/baja lógica, 27 tests de la etapa.
 - **Etapa 5 (Productos) ✅ cerrada (18/11/2026):** catálogo completo — alta, consulta,
@@ -56,6 +56,17 @@ Proyecto en **implementación activa**. Última auditoría de estado: **18/11/20
   permiso, validaciones 400, contra Firebase/PostgreSQL). El alta devuelve el ingreso con
   proveedor y productos resueltos (fix aplicado por el propio E2E). **Cierre autorizado
   por el responsable el 18/11/2026.**
+- **Etapa 9 (Ventas) ✅ cerrada (18/11/2026):** proceso completo de comercialización
+  (RoadMap §12, RF-040 a RF-050) — alta con cálculo de subtotales y total (RF-042/043),
+  método de pago (RF-044), cliente opcional validado como registrado (RF-045),
+  **usuario vendedor resuelto desde el claim de autenticación (RF-046)**, descuento
+  automático de stock (RF-047) con bloqueo de stock insuficiente (RF-025), consulta y
+  detalle (RF-048/049), anulación con restitución de stock (RF-050), permisos
+  `ventas.consultar/crear/anular`, frontend `/ventas` completo, **36 tests nuevos
+  (223/223 en verde)** y smoke test E2E real **22/22 pasos** (vendedor crea venta y no
+  puede anular, totales, stock 10−1−2=7, rollback de stock insuficiente, anulación con
+  restitución, contra Firebase/PostgreSQL). **Cierre autorizado por el responsable
+  el 18/11/2026.**
 
 **Etapa 5 (Productos) — detalle del cierre (cerrada el 18/11/2026):**
 API de productos con búsqueda y filtros (nombre, código, rubro, estado, stock — RF-016),
@@ -63,8 +74,8 @@ validadores invocados, permisos granulares (`productos.consultar/crear/editar/el
 frontend `/productos` completo (alta, consulta, filtros, modificación, baja lógica),
 21 tests de la etapa (72/72 en total).
 
-**Etapa actual: Etapa 8 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
-**Etapa 9 — Ventas** (§12), **autorizada e en curso por el responsable el 18/11/2026**.
+**Etapa actual: Etapa 9 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
+**Etapa 10 — Caja** (§13), **autorizada e en curso por el responsable el 18/11/2026**.
 
 **Decisión del responsable (18/11/2026) — especificación de roles:** el **superusuario**
 es el rol **Administrador** (acceso completo a todas las funciones del sistema: control de
@@ -113,20 +124,21 @@ revisión aislado) — es ajena a la eliminación de imágenes.
 - **Etapa 8 (Ingreso de mercadería): ✅ CERRADA (18/11/2026).** RoadMap §11 — creación
   de ingresos, asociación con proveedor, cantidades, costos y actualización de stock.
   E2E real 17/17; 187/187 tests en verde.
-- **Etapa 9 (Ventas) — EN CURSO (18/11/2026, autorizada):** RoadMap §12.
-- **Etapa 10 (Caja):** existe código de servicio adelantado (Caja) **sin API, sin frontend
-  y sin tests**. Trabajo fuera de orden: no se considera cerrado ni autoriza a avanzar.
+- **Etapa 9 (Ventas): ✅ CERRADA (18/11/2026).** RoadMap §12 — creación de ventas,
+  cálculos, cliente, vendedor, stock automático, consulta, detalle y anulación.
+  E2E real 22/22; 223/223 tests en verde.
+- **Etapa 10 (Caja) — EN CURSO (18/11/2026, autorizada):** RoadMap §13; existe código
+  de servicio adelantado (Caja, MovimientoCaja) **sin API, sin frontend y sin tests**.
 - **Etapas 11 a 17:** no iniciadas.
-- **Tests en el proyecto: 187, todos en verde (18/11/2026, tras el cierre de la Etapa 8).**
+- **Tests en el proyecto: 223, todos en verde (18/11/2026, tras el cierre de la Etapa 9).**
 
-**Diagnóstico de siguiente tarea:** las **Etapas 6, 7 y 8** están **cerradas
-(18/11/2026)**. Según el orden de `RoadMap.md`, corresponde la **Etapa 9 — Ventas**
-(§12): crear venta, agregar productos, cantidades, subtotales, total, método de pago,
-cliente, usuario vendedor, descuento automático de stock, consulta, detalle, anulación y
-tests (cálculos, stock insuficiente, persistencia, stock) — **autorizada por el
-responsable el 18/11/2026**. Antes de iniciar cualquier tarea deben consultarse los
-requisitos y criterios exactos aplicables en `RoadMap.md` y en el SDD. El cierre de la
-etapa requerirá autorización expresa del responsable del proyecto.
+**Diagnóstico de siguiente tarea:** las **Etapas 6 a 9** están **cerradas (18/11/2026)**.
+Según el orden de `RoadMap.md`, corresponde la **Etapa 10 — Caja** (§13): apertura,
+monto inicial, ingresos, egresos, movimientos, asociación de ventas, saldo, cierre,
+diferencias, historial y su test (monto inicial + ingresos − egresos = monto final) —
+**autorizada por el responsable el 18/11/2026**. Antes de iniciar cualquier tarea deben
+consultarse los requisitos y criterios exactos aplicables en `RoadMap.md` y en el SDD.
+El cierre de la etapa requerirá autorización expresa del responsable del proyecto.
 
 Avance global estimado al 15/11/2026 (recalculado tras los cierres de Etapas 0–4):
 **~37% estricto / ~47% ponderado** (misma metodología descrita arriba, aplicada a las

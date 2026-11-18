@@ -30,10 +30,26 @@ public class VentaServiceTests : IDisposable
             new VentaRepository(_context),
             new ProductoRepository(_context),
             new StockRepository(_context),
-            new ClienteRepository(_context));
+            new ClienteRepository(_context),
+            new CajaRepository(_context),
+            new MovimientoCajaRepository(_context));
     }
 
     public void Dispose() => _context.Dispose();
+
+    private async Task<int> SeedCajaAbiertaAsync(int usuarioId, decimal montoInicial = 1000)
+    {
+        var caja = new Caja
+        {
+            FechaApertura = DateTime.UtcNow,
+            MontoInicial = montoInicial,
+            Abierta = true,
+            UsuarioAperturaId = usuarioId
+        };
+        _context.Cajas.Add(caja);
+        await _context.SaveChangesAsync();
+        return caja.Id;
+    }
 
     private async Task<int> SeedUsuarioAsync(string firebaseUid = "uid-vendedor")
     {
@@ -329,7 +345,7 @@ public class VentaServiceTests : IDisposable
         var stock = await _context.Stocks.FirstAsync(s => s.ProductoId == productoId);
         stock.Cantidad.Should().Be(6);
 
-        await _service.AnularAsync(venta.Id);
+        await _service.AnularAsync(venta.Id, usuarioId);
 
         var enDb = await _context.Ventas.IgnoreQueryFilters().FirstAsync(v => v.Id == venta.Id);
         enDb.Anulada.Should().BeTrue("RF-050: conservar la venta con su información");
@@ -351,16 +367,120 @@ public class VentaServiceTests : IDisposable
             }
         }, usuarioId);
 
-        await _service.AnularAsync(venta.Id);
+        await _service.AnularAsync(venta.Id, usuarioId);
 
-        var act = () => _service.AnularAsync(venta.Id);
+        var act = () => _service.AnularAsync(venta.Id, usuarioId);
         await act.Should().ThrowAsync<BusinessRuleException>("no se anula dos veces");
     }
 
     [Fact]
     public async Task AnularAsync_Inexistente_LanzaEntityNotFound()
     {
-        var act = () => _service.AnularAsync(9999);
+        var act = () => _service.AnularAsync(9999, 1);
         await act.Should().ThrowAsync<EntityNotFoundException>();
+    }
+
+    // ── RF-053 / RF-050: asociación de ventas con caja ──────────────────────
+
+    [Fact]
+    public async Task CreateAsync_ConCajaAbierta_RegistraElMovimientoEnCaja()
+    {
+        var usuarioId = await SeedUsuarioAsync();
+        var cajaId = await SeedCajaAbiertaAsync(usuarioId);
+        var productoId = await SeedProductoAsync(precioVenta: 100, stockCantidad: 50);
+
+        var venta = await _service.CreateAsync(new VentaCreateDto
+        {
+            MetodoPago = "Efectivo",
+            Detalles = new List<DetalleVentaCreateDto>
+            {
+                new() { ProductoId = productoId, Cantidad = 3 }
+            }
+        }, usuarioId);
+
+        var movimiento = await _context.MovimientosCaja.SingleAsync(m => m.VentaId == venta.Id);
+        movimiento.CajaId.Should().Be(cajaId, "RF-053");
+        movimiento.TipoMovimiento.Should().Be("Ingreso");
+        movimiento.Monto.Should().Be(300m, "RF-053: el total de la venta");
+        movimiento.UsuarioId.Should().Be(usuarioId, "RF-052: usuario responsable");
+        movimiento.Descripcion.Should().Be($"Venta #{venta.Id}");
+    }
+
+    [Fact]
+    public async Task CreateAsync_SinCajaAbierta_NoRegistraMovimiento()
+    {
+        var usuarioId = await SeedUsuarioAsync();
+        var productoId = await SeedProductoAsync();
+
+        var venta = await _service.CreateAsync(new VentaCreateDto
+        {
+            MetodoPago = "Efectivo",
+            Detalles = new List<DetalleVentaCreateDto>
+            {
+                new() { ProductoId = productoId, Cantidad = 1 }
+            }
+        }, usuarioId);
+
+        (await _context.MovimientosCaja.CountAsync(m => m.VentaId == venta.Id))
+            .Should().Be(0, "sin caja abierta no hay dónde registrar (cuando corresponda)");
+    }
+
+    [Fact]
+    public async Task AnularAsync_ConCajaAbierta_AjustaElMovimientoConEgresoCompensador()
+    {
+        var usuarioId = await SeedUsuarioAsync();
+        var cajaId = await SeedCajaAbiertaAsync(usuarioId);
+        var productoId = await SeedProductoAsync(stockCantidad: 50);
+        var venta = await _service.CreateAsync(new VentaCreateDto
+        {
+            MetodoPago = "Efectivo",
+            Detalles = new List<DetalleVentaCreateDto>
+            {
+                new() { ProductoId = productoId, Cantidad = 2 }
+            }
+        }, usuarioId);
+
+        await _service.AnularAsync(venta.Id, usuarioId);
+
+        var movimientos = await _context.MovimientosCaja
+            .Where(m => m.CajaId == cajaId)
+            .ToListAsync();
+        movimientos.Should().HaveCount(2, "ingreso de la venta + egreso compensador (RF-050)");
+        movimientos.Single(m => m.TipoMovimiento == "Ingreso").Monto.Should().Be(200m);
+        var egreso = movimientos.Single(m => m.TipoMovimiento == "Egreso");
+        egreso.Monto.Should().Be(200m, "RF-050: ajuste por el total de la venta");
+        egreso.Descripcion.Should().Be($"Anulación venta #{venta.Id}");
+        egreso.UsuarioId.Should().Be(usuarioId, "RF-052");
+
+        // La fórmula de caja (RoadMap §13): ingresos − egresos netean en 0.
+        var ingresos = movimientos.Where(m => m.TipoMovimiento == "Ingreso").Sum(m => m.Monto);
+        var egresos = movimientos.Where(m => m.TipoMovimiento == "Egreso").Sum(m => m.Monto);
+        (ingresos - egresos).Should().Be(0m);
+    }
+
+    [Fact]
+    public async Task AnularAsync_ConCajaCerrada_NoModificaElMovimiento()
+    {
+        var usuarioId = await SeedUsuarioAsync();
+        var cajaId = await SeedCajaAbiertaAsync(usuarioId);
+        var productoId = await SeedProductoAsync(stockCantidad: 50);
+        var venta = await _service.CreateAsync(new VentaCreateDto
+        {
+            MetodoPago = "Efectivo",
+            Detalles = new List<DetalleVentaCreateDto>
+            {
+                new() { ProductoId = productoId, Cantidad = 1 }
+            }
+        }, usuarioId);
+
+        // Se cierra el período antes de la anulación.
+        var caja = await _context.Cajas.FindAsync(cajaId);
+        caja!.Abierta = false;
+        await _context.SaveChangesAsync();
+
+        await _service.AnularAsync(venta.Id, usuarioId);
+
+        (await _context.MovimientosCaja.CountAsync(m => m.CajaId == cajaId))
+            .Should().Be(1, "RF-050: un período cerrado no se modifica");
     }
 }

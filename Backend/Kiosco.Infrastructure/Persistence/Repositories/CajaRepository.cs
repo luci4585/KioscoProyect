@@ -11,6 +11,16 @@ public class CajaRepository : GenericRepository<Caja>, ICajaRepository
     {
     }
 
+    public override async Task<IEnumerable<Caja>> GetAllAsync()
+    {
+        // Historial de cajas (RF-058): aperturas y cierres con sus usuarios.
+        return await _context.Cajas
+            .Include(c => c.UsuarioApertura)
+            .Include(c => c.UsuarioCierre)
+            .OrderByDescending(c => c.FechaApertura)
+            .ToListAsync();
+    }
+
     public async Task<Caja?> GetCajaAbiertaAsync()
     {
         return await _context.Cajas

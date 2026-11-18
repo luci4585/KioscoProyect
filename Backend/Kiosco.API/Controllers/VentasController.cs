@@ -77,7 +77,15 @@ public class VentasController : ControllerBase
     [RequirePermission("ventas.anular")]
     public async Task<IActionResult> AnularVenta(int id)
     {
-        await _ventaService.AnularAsync(id);
+        // RF-050/RF-052: el responsable del ajuste es el usuario autenticado.
+        var firebaseUid = User.FindFirst("firebase_uid")?.Value;
+        var usuario = string.IsNullOrEmpty(firebaseUid)
+            ? null
+            : await _usuarioService.GetByFirebaseUidAsync(firebaseUid);
+        if (usuario == null)
+            return Unauthorized();
+
+        await _ventaService.AnularAsync(id, usuario.Id);
         return NoContent();
     }
 

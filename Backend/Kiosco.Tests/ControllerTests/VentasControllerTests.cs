@@ -37,7 +37,9 @@ public class VentasControllerTests : IDisposable
             new VentaRepository(_context),
             new ProductoRepository(_context),
             new StockRepository(_context),
-            new ClienteRepository(_context));
+            new ClienteRepository(_context),
+            new CajaRepository(_context),
+            new MovimientoCajaRepository(_context));
 
         _controller = new VentasController(
             _ventaService,
@@ -270,6 +272,7 @@ public class VentasControllerTests : IDisposable
     [Fact]
     public async Task Anular_Inexistente_LanzaEntityNotFound()
     {
+        await SeedUsuarioAsync(); // el controller resuelve el responsable antes de anular
         var act = () => _controller.AnularVenta(9999);
         await act.Should().ThrowAsync<EntityNotFoundException>();
     }

@@ -101,7 +101,8 @@ public static class EntityMapper
         TotalEgresos = entity.Movimientos?.Where(m => m.TipoMovimiento == "Egreso").Sum(m => m.Monto) ?? 0,
         SaldoCalculado = (entity.MontoInicial
             + (entity.Movimientos?.Where(m => m.TipoMovimiento == "Ingreso").Sum(m => m.Monto) ?? 0)
-            - (entity.Movimientos?.Where(m => m.TipoMovimiento == "Egreso").Sum(m => m.Monto) ?? 0))
+            - (entity.Movimientos?.Where(m => m.TipoMovimiento == "Egreso").Sum(m => m.Monto) ?? 0)),
+        Movimientos = entity.Movimientos?.Select(m => m.ToDto()).ToList() ?? new List<MovimientoCajaDto>()
     };
 
     public static MovimientoCajaDto ToDto(this MovimientoCaja entity) => new()

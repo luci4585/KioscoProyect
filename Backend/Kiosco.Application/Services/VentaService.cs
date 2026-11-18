@@ -13,17 +13,23 @@ public class VentaService : IVentaService
     private readonly IProductoRepository _productoRepository;
     private readonly IStockRepository _stockRepository;
     private readonly IClienteRepository _clienteRepository;
+    private readonly ICajaRepository _cajaRepository;
+    private readonly IMovimientoCajaRepository _movimientoCajaRepository;
 
     public VentaService(
         IVentaRepository ventaRepository,
         IProductoRepository productoRepository,
         IStockRepository stockRepository,
-        IClienteRepository clienteRepository)
+        IClienteRepository clienteRepository,
+        ICajaRepository cajaRepository,
+        IMovimientoCajaRepository movimientoCajaRepository)
     {
         _ventaRepository = ventaRepository;
         _productoRepository = productoRepository;
         _stockRepository = stockRepository;
         _clienteRepository = clienteRepository;
+        _cajaRepository = cajaRepository;
+        _movimientoCajaRepository = movimientoCajaRepository;
     }
 
     public async Task<IEnumerable<VentaDto>> GetAllAsync()
@@ -95,10 +101,29 @@ public class VentaService : IVentaService
         // Devuelve la venta con usuario, cliente y productos resueltos: la
         // respuesta del alta debe tener las mismas descripciones que el detalle.
         var completo = await _ventaRepository.GetWithDetailsAsync(created.Id) ?? created;
+
+        // RF-053: registrar en caja el movimiento monetario de la venta, si hay
+        // una caja abierta (si no, la venta queda registrada y el movimiento se
+        // hará constar cuando corresponda).
+        var cajaAbierta = await _cajaRepository.GetCajaAbiertaAsync();
+        if (cajaAbierta != null)
+        {
+            await _movimientoCajaRepository.CreateAsync(new MovimientoCaja
+            {
+                CajaId = cajaAbierta.Id,
+                Fecha = DateTime.UtcNow,
+                TipoMovimiento = "Ingreso",
+                Monto = total,
+                Descripcion = $"Venta #{created.Id}",
+                UsuarioId = usuarioId,
+                VentaId = created.Id
+            });
+        }
+
         return completo.ToDto();
     }
 
-    public async Task AnularAsync(int id)
+    public async Task AnularAsync(int id, int usuarioId)
     {
         var venta = await _ventaRepository.GetWithDetailsAsync(id)
             ?? throw new EntityNotFoundException(nameof(Venta), id);
@@ -116,6 +141,28 @@ public class VentaService : IVentaService
             {
                 stock.Cantidad += detalle.Cantidad;
                 await _stockRepository.UpdateAsync(stock);
+            }
+        }
+
+        // RF-050/RF-053: ajustar el movimiento de caja asociado mientras su
+        // caja siga abierta; un período cerrado no se modifica ("cuando
+        // corresponda"). El ajuste es un egreso compensador que conserva el
+        // historial (RF-052).
+        var movimiento = await _movimientoCajaRepository.GetByVentaIdAsync(id);
+        if (movimiento != null)
+        {
+            var caja = await _cajaRepository.GetByIdAsync(movimiento.CajaId);
+            if (caja is { Abierta: true })
+            {
+                await _movimientoCajaRepository.CreateAsync(new MovimientoCaja
+                {
+                    CajaId = movimiento.CajaId,
+                    Fecha = DateTime.UtcNow,
+                    TipoMovimiento = "Egreso",
+                    Monto = movimiento.Monto,
+                    Descripcion = $"Anulación venta #{id}",
+                    UsuarioId = usuarioId
+                });
             }
         }
     }

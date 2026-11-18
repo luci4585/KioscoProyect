@@ -18,6 +18,13 @@ public class CajaService : ICajaService
         _movimientoRepository = movimientoRepository;
     }
 
+    public async Task<IEnumerable<CajaDto>> GetAllAsync()
+    {
+        // Historial de cajas (RF-058).
+        var cajas = await _cajaRepository.GetAllAsync();
+        return cajas.Select(c => c.ToDto());
+    }
+
     public async Task<CajaDto?> GetCajaAbiertaAsync()
     {
         var caja = await _cajaRepository.GetCajaAbiertaAsync();

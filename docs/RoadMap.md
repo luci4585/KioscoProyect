@@ -295,7 +295,7 @@ Verificar que el ingreso actualice correctamente el stock.
 
 ---
 
-## 12. Etapa 9 — Ventas
+## 12. Etapa 9 — Ventas ✅ CERRADA (18/11/2026)
 
 ### Objetivo
 
