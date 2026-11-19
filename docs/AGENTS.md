@@ -4,9 +4,9 @@
 
 Proyecto en **implementación activa**. Última auditoría de estado: **18/11/2026**.
 
-**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5 a 10 el 18/11/2026) — Etapas 0, 1, 2, 4, 5, 6, 7, 8, 9 y 10 cerradas:**
+**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5 a 13 el 18/11/2026) — Etapas 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12 y 13 cerradas:**
 
-- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **266/266 en verde**,
+- **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **295/295 en verde**,
   `npm run lint` y `npm run build` correctos.
 - **Etapa 0 (Preparación) ✅ cerrada:** ejecutabilidad verificada — la API arranca y sirve
   Swagger (HTTP 200) y `GET /api/Rubros` responde 401 sin token (protección activa).
@@ -78,6 +78,40 @@ Proyecto en **implementación activa**. Última auditoría de estado: **18/11/20
   −50, 403 sin permiso, contra Firebase/PostgreSQL). Fix del E2E: `GET /abierta`
   sin caja devuelve 200 con null (no 204). **Cierre autorizado por el responsable
   el 18/11/2026.**
+- **Etapa 11 (Informes y dashboard) ✅ cerrada (18/11/2026):** dashboard e informes
+  funcionales (RoadMap §14, RF-059 a RF-072) — resumen del día con las fórmulas
+  RF-065 (ganancia) y RF-067 (monto final), indicadores RF-071, cierre diario RF-068,
+  ventas del período con filtros fecha/usuario/cliente/método (RF-059/060), ganancia
+  por período (RF-066), productos más vendidos (RF-063), caja por período (RF-062),
+  stock bajo e historial reutilizando módulos existentes (RF-061/RF-069), permisos
+  `informes.consultar/exportar`, **exportación Excel de 7 tipos con ClosedXML en
+  backend (RNF-057/058, decisión documentada en el csproj y el puerto)**,
+  frontend `/informes` completo, **25 tests nuevos (291/291 en verde)** y smoke test
+  E2E real **20/20 pasos** (fórmulas 1300/140 verificadas, filtros, 7/7 Excel con
+  firma OOXML, 403 de exportación, contra Firebase/PostgreSQL). Bugs corregidos por
+  el E2E: fechas `Kind=Utc` exigidas por Npgsql y alineación de reglas de negocio a
+  400. **Cierre autorizado por el responsable el 18/11/2026.**
+- **Etapa 12 (Integración general) ✅ cerrada (18/11/2026):** comprobación del
+  funcionamiento conjunto (RoadMap §15) — el **flujo principal completo de 8 eslabones
+  ejecutado de punta a punta en una sola corrida (14/14 pasos OK)**: proveedor →
+  ingreso de mercadería (RF-036/037/039) → actualización de stock 0+10=10 (RF-038) →
+  producto disponible (RF-016/021) → venta 300 (RF-040/042/043) → descuento 10−2=8
+  (RF-047) → movimiento de caja +300 con saldo 1300 (RF-053) → cierre con diferencia 0
+  (RF-056/057) → informe diario consistente (RF-064/065/067: ganancia 130, caja 1300
+  en los tres módulos — RF-079). Regresión completa: build 0 errores, 291/291 tests,
+  lint y build de frontend correctos. **Sin cambios de código** (etapa de
+  comprobación). **Cierre autorizado por el responsable el 18/11/2026.**
+- **Etapa 13 (Pruebas de integración completas) ✅ cerrada (18/11/2026):** los **4
+  escenarios completos del RoadMap §16 ejecutados contra PostgreSQL de testing real**
+  (base dedicada `kiosco_db_test`, recreada por test con la migración de producción —
+  SDD §27.3): Escenario 1 Producto (rubro → producto → stock → consulta), Escenario 2
+  Mercadería (proveedor → ingreso con costos → stock 0+5=5), Escenario 3 Venta (caja →
+  cliente → venta 200 → stock 8 → movimiento RF-053 → saldo 1200) y Escenario 4 Cierre
+  (450 ingresos − 100 egresos → saldo 1350 → cierre diferencia 0 → informe diario
+  consistente RF-079), con assert explícito del proveedor Npgsql. **4 tests nuevos
+  (295/295 en verde).** Sin migraciones nuevas ni cambios en producción; los tests de
+  integración requieren PostgreSQL en marcha. **Cierre autorizado por el responsable
+  el 18/11/2026.**
 
 **Etapa 5 (Productos) — detalle del cierre (cerrada el 18/11/2026):**
 API de productos con búsqueda y filtros (nombre, código, rubro, estado, stock — RF-016),
@@ -85,9 +119,9 @@ validadores invocados, permisos granulares (`productos.consultar/crear/editar/el
 frontend `/productos` completo (alta, consulta, filtros, modificación, baja lógica),
 21 tests de la etapa (72/72 en total).
 
-**Etapa actual: Etapa 10 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
-**Etapa 11 — Informes y dashboard** (§14), **autorizada e en curso por el responsable
-el 18/11/2026**.
+**Etapa actual: Etapa 13 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
+**Etapa 14 — Regresión** (§17), **autorizada e en curso por el responsable el
+18/11/2026**.
 
 **Decisión del responsable (18/11/2026) — especificación de roles:** el **superusuario**
 es el rol **Administrador** (acceso completo a todas las funciones del sistema: control de
@@ -142,18 +176,26 @@ revisión aislado) — es ajena a la eliminación de imágenes.
 - **Etapa 10 (Caja): ✅ CERRADA (18/11/2026).** RoadMap §13 — apertura, movimientos,
   ventas en caja, saldo, cierre con diferencias e historial. E2E real 24/24;
   266/266 tests en verde.
-- **Etapa 11 (Informes y dashboard) — EN CURSO (18/11/2026, autorizada):** RoadMap §14.
-- **Etapas 12 a 17:** no iniciadas.
-- **Tests en el proyecto: 266, todos en verde (18/11/2026, tras el cierre de la Etapa 10).**
+- **Etapa 11 (Informes y dashboard): ✅ CERRADA (18/11/2026).** RoadMap §14 —
+  dashboard, informes por período, fórmulas de ganancia y caja, exportación Excel
+  (7 tipos, ClosedXML). E2E real 20/20; 291/291 tests en verde.
+- **Etapa 12 (Integración general): ✅ CERRADA (18/11/2026).** RoadMap §15 — flujo
+  principal conjunto verificado 14/14 en una corrida; regresión completa en verde.
+- **Etapa 13 (Pruebas de integración completas): ✅ CERRADA (18/11/2026).** RoadMap §16 —
+  4 escenarios contra PostgreSQL de testing (kiosco_db_test). 295/295 tests en verde.
+- **Etapa 14 (Regresión) — EN CURSO (18/11/2026, autorizada):** RoadMap §17 — ejecución
+  de las 4 categorías de pruebas.
+- **Etapas 15 a 17:** no iniciadas.
+- **Tests en el proyecto: 295, todos en verde (18/11/2026, tras el cierre de la Etapa 13).
+  Requieren PostgreSQL en marcha para los 4 de integración.**
 
-**Diagnóstico de siguiente tarea:** las **Etapas 6 a 10** están **cerradas (18/11/2026)**.
-Según el orden de `RoadMap.md`, corresponde la **Etapa 11 — Informes y dashboard**
-(§14): ventas del día, ganancia, dinero disponible, productos vendidos, más vendidos,
-stock bajo, ingresos, egresos, historial, informes por período y exportación Excel
-(RF-059 a RF-072) — **autorizada por el responsable el 18/11/2026**. Antes de iniciar
-cualquier tarea deben consultarse los requisitos y criterios exactos aplicables en
-`RoadMap.md` y en el SDD. El cierre de la etapa requerirá autorización expresa del
-responsable del proyecto.
+**Diagnóstico de siguiente tarea:** las **Etapas 6 a 13** están **cerradas (18/11/2026)**.
+Según el orden de `RoadMap.md`, corresponde la **Etapa 14 — Regresión** (§17): ejecutar
+las pruebas unitarias, de controllers, de integración y la batería completa de
+regresión (SDD §32.4) — **autorizada por el responsable el 18/11/2026**. Antes de
+iniciar cualquier tarea deben consultarse los requisitos y criterios exactos
+aplicables en `RoadMap.md` y en el SDD. El cierre de la etapa requerirá autorización
+expresa del responsable del proyecto.
 
 Avance global estimado al 15/11/2026 (recalculado tras los cierres de Etapas 0–4):
 **~37% estricto / ~47% ponderado** (misma metodología descrita arriba, aplicada a las
