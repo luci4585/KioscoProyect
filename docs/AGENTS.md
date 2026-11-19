@@ -4,7 +4,7 @@
 
 Proyecto en **implementación activa**. Última auditoría de estado: **18/11/2026**.
 
-**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5 a 13 el 18/11/2026) — Etapas 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12 y 13 cerradas:**
+**Cierres autorizados por el responsable (Etapas 0, 1, 2 y 4 el 15/11/2026; Etapas 5 a 14 el 18/11/2026) — Etapas 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 y 14 cerradas:**
 
 - **Evidencia global de cierre:** `dotnet build` 0 errores, `dotnet test` **295/295 en verde**,
   `npm run lint` y `npm run build` correctos.
@@ -112,6 +112,12 @@ Proyecto en **implementación activa**. Última auditoría de estado: **18/11/20
   (295/295 en verde).** Sin migraciones nuevas ni cambios en producción; los tests de
   integración requieren PostgreSQL en marcha. **Cierre autorizado por el responsable
   el 18/11/2026.**
+- **Etapa 14 (Regresión) ✅ cerrada (18/11/2026):** ejecución de las 4 categorías de
+  pruebas del RoadMap §17 — **unitarias 189/189** (RNF-061), **controllers 102/102**
+  (RNF-062, en memoria), **integración 4/4** (RNF-063, PostgreSQL de testing) y
+  **regresión: batería completa 295/295 + lint 0 + build 0** (SDD §32.4), sin una
+  sola falla. **Sin cambios de código** (etapa de ejecución). **Cierre autorizado por
+  el responsable el 18/11/2026.**
 
 **Etapa 5 (Productos) — detalle del cierre (cerrada el 18/11/2026):**
 API de productos con búsqueda y filtros (nombre, código, rubro, estado, stock — RF-016),
@@ -119,9 +125,9 @@ validadores invocados, permisos granulares (`productos.consultar/crear/editar/el
 frontend `/productos` completo (alta, consulta, filtros, modificación, baja lógica),
 21 tests de la etapa (72/72 en total).
 
-**Etapa actual: Etapa 13 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
-**Etapa 14 — Regresión** (§17), **autorizada e en curso por el responsable el
-18/11/2026**.
+**Etapa actual: Etapa 14 CERRADA (18/11/2026).** Siguiente etapa según `RoadMap.md`:
+**Etapa 15 — Seguridad y optimización** (§18), **autorizada e en curso por el
+responsable el 18/11/2026**.
 
 **Decisión del responsable (18/11/2026) — especificación de roles:** el **superusuario**
 es el rol **Administrador** (acceso completo a todas las funciones del sistema: control de
@@ -183,19 +189,23 @@ revisión aislado) — es ajena a la eliminación de imágenes.
   principal conjunto verificado 14/14 en una corrida; regresión completa en verde.
 - **Etapa 13 (Pruebas de integración completas): ✅ CERRADA (18/11/2026).** RoadMap §16 —
   4 escenarios contra PostgreSQL de testing (kiosco_db_test). 295/295 tests en verde.
-- **Etapa 14 (Regresión) — EN CURSO (18/11/2026, autorizada):** RoadMap §17 — ejecución
-  de las 4 categorías de pruebas.
-- **Etapas 15 a 17:** no iniciadas.
-- **Tests en el proyecto: 295, todos en verde (18/11/2026, tras el cierre de la Etapa 13).
+- **Etapa 14 (Regresión): ✅ CERRADA (18/11/2026).** RoadMap §17 — 4 categorías
+  ejecutadas: 189 unitarias + 102 controllers + 4 integración + batería completa
+  295/295, lint 0, build 0.
+- **Etapa 15 (Seguridad y optimización) — EN CURSO (18/11/2026, autorizada):**
+  RoadMap §18 — revisión de 11 ítems para la entrega.
+- **Etapas 16 y 17:** no iniciadas.
+- **Tests en el proyecto: 295, todos en verde (18/11/2026, tras el cierre de la Etapa 14).
   Requieren PostgreSQL en marcha para los 4 de integración.**
 
-**Diagnóstico de siguiente tarea:** las **Etapas 6 a 13** están **cerradas (18/11/2026)**.
-Según el orden de `RoadMap.md`, corresponde la **Etapa 14 — Regresión** (§17): ejecutar
-las pruebas unitarias, de controllers, de integración y la batería completa de
-regresión (SDD §32.4) — **autorizada por el responsable el 18/11/2026**. Antes de
-iniciar cualquier tarea deben consultarse los requisitos y criterios exactos
-aplicables en `RoadMap.md` y en el SDD. El cierre de la etapa requerirá autorización
-expresa del responsable del proyecto.
+**Diagnóstico de siguiente tarea:** las **Etapas 6 a 14** están **cerradas (18/11/2026)**.
+Según el orden de `RoadMap.md`, corresponde la **Etapa 15 — Seguridad y optimización**
+(§18): revisión de autenticación, autorización, validaciones, manejo de errores, logs,
+rendimiento, consultas, variables de entorno, permisos Firebase, código duplicado y
+organización — **autorizada por el responsable el 18/11/2026**. Antes de iniciar
+cualquier tarea deben consultarse los requisitos y criterios exactos aplicables en
+`RoadMap.md` y en el SDD. El cierre de la etapa requerirá autorización expresa del
+responsable del proyecto.
 
 Avance global estimado al 15/11/2026 (recalculado tras los cierres de Etapas 0–4):
 **~37% estricto / ~47% ponderado** (misma metodología descrita arriba, aplicada a las
